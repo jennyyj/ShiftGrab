@@ -10857,11 +10857,11 @@ h1 {
 header {
   position: relative;
   height: 100vh;
-  background-image: url('images/1.jpg'); /* Update path if needed */
+  background-image: url('images/1.jpg'); 
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: transparent; /* Ensure no background color */
+  background-color: transparent; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -10911,10 +10911,10 @@ header .container {
   border-color: #3a73c1;
   font-weight: bold;
   display: block;
-  margin: 0 auto; /* Center the button */
+  margin: 0 auto; /* Centers button keep it like that */
 }
 
 #contact .form-label {
-  color: #3a73c1; /* Replace with your desired color */
-  font-weight: bold; /* Optional: Makes the label text bold */
+  color: #3a73c1; 
+  font-weight: bold; 
 }
