@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - ShiftGrab</title>
+    <link rel="stylesheet" href="stylesSG.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="manifest" href="./manifest.json">
+</head>
+<body>
+    <div class="container">
+        <h1>WELCOME TO</h1>
+        <h1><span class="shift">SHIFT</span><span class="grab">GRAB</span></h1>
+
+        <input type="text" id="username" placeholder="Enter A username" required>
+        <input type="password" id="password" placeholder="Enter A password" required>
+
+        <p class="add-phone-numbers">Add Phone Numbers</p>
+
+        <div id="phone-fields">
+            <div class="phone-entry">
+                <input type="text" class="phone-name" placeholder="Enter name" required>
+                <input type="text" class="phone-number" placeholder="Enter phone number" required>
+                <select class="phone-category" required>
+                    <option value="" disabled selected>Select Category</option>
+                    <option value="kitchen">Kitchen</option>
+                    <option value="bar">Bar</option>
+                    <option value="server">Server</option>
+                    <option value="cleaning">Cleaning</option>
+                    <option value="security">Security</option>
+                    <option value="management">Management</option>
+                    <option value="everyone">Everyone</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="add-more-btn" id="add-phone-field-btn">
+            <span>+ ADD MORE</span>
+        </button>
+
+        <button class="join-now" id="register-btn">
+            <span>REGISTER</span>
+            <span class="icon">➜</span>
+        </button>
+
+        <p class="footer-text">
+            Already have an account? <a href="login.html">LOGIN HERE</a>
+        </p>
+
+    </div>
+    <script>
+        document.getElementById('register-btn').addEventListener('click', async function () {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            const phoneEntries = Array.from(document.getElementsByClassName('phone-entry')).map(entry => ({
+                name: entry.querySelector('.phone-name').value.trim(),
+                number: entry.querySelector('.phone-number').value.trim(),
+                category: entry.querySelector('.phone-category').value.trim(),
+            }));
+
+            if (!username || !password || phoneEntries.some(pn => !pn.name || !pn.number || !pn.category)) {
+                alert('All fields, including phone numbers and categories, are required.');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, phoneNumbers: phoneEntries }),
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Registration successful!');
+                    window.location.href = 'login.html';
+                } else {
+                    alert(result.message || 'Registration failed.');
+                }
+            } catch (error) {
+                console.error('Error registering user:', error);
+                alert('An error occurred.');
+            }
+        });
+
+        document.getElementById('add-phone-field-btn').addEventListener('click', function () {
+            const phoneFields = document.getElementById('phone-fields');
+
+            const phoneEntry = document.createElement('div');
+            phoneEntry.className = 'phone-entry';
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.className = 'phone-name';
+            nameInput.placeholder = 'Enter name';
+
+            const phoneInput = document.createElement('input');
+            phoneInput.type = 'text';
+            phoneInput.className = 'phone-number';
+            phoneInput.placeholder = 'Enter phone number';
+
+            const categorySelect = document.createElement('select');
+            categorySelect.className = 'phone-category';
+            categorySelect.innerHTML = `
+                <option value="" disabled selected>Select Category</option>
+                <option value="kitchen">Kitchen</option>
+                <option value="bar">Bar</option>
+                <option value="server">Server</option>
+                <option value="cleaning">Cleaning</option>
+                <option value="security">Security</option>
+                <option value="management">Management</option>
+                <option value="everyone">Everyone</option>
+            `;
+
+            phoneEntry.appendChild(nameInput);
+            phoneEntry.appendChild(phoneInput);
+            phoneEntry.appendChild(categorySelect);
+
+            phoneFields.appendChild(phoneEntry);
+        });
+
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker
+              .register('./service-worker.js')
+              .then(() => console.log('Service Worker registered'))
+              .catch((error) => console.error('Service Worker registration failed:', error));
+          });
+        }
+    </script>
+</body>
+</html>

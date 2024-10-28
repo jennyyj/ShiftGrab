@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ShiftGrab</title>
+    <link rel="stylesheet" href="stylesSG.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="manifest" href="./manifest.json">
+</head>
+<body>
+    <div class="landing-page">
+        <h1>WELCOME BACK</h1>
+
+        <input type="text" id="username" placeholder="Enter your username" required>
+        <input type="password" id="password" placeholder="Enter your password" required>
+
+        <button class="login" id="login-btn">
+            <span>LOG IN</span>
+            <span class="icon">➜</span>
+        </button>
+
+        <p class="footer-text">
+            Don't have an account? <a href="register.html">REGISTER HERE</a>
+        </p>
+        <p id="login-status" class="footer-text"></p>
+    </div>
+
+    <script>
+        document.getElementById('login-btn').addEventListener('click', function() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            fetch('http://localhost:8080/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    localStorage.setItem('token', data.token); // Store the JWT token
+                    document.getElementById('login-status').textContent = 'Login successful!';
+                    window.location.href = 'post-job.html'; // Redirect to post-job page
+                } else {
+                    document.getElementById('login-status').textContent = data.message || 'Login failed';
+                }
+            })
+            .catch(error => {
+                document.getElementById('login-status').textContent = 'Error logging in';
+            });
+        });
+
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker
+              .register('./service-worker.js')
+              .then(() => console.log('Service Worker registered'))
+              .catch((error) => console.error('Service Worker registration failed:', error));
+          });
+        }
+    </script>
+</body>
+</html>

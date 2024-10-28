@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claim Shift</title>
+    <link rel="stylesheet" href="stylesSG.css">
+    <link rel="manifest" href="./manifest.json">
+</head>
+<body>
+    <div class="container">
+        <h1>Claim Shift</h1>
+        <p id="shift-details"></p>
+
+        <input type="text" id="worker-name" placeholder="Enter your name" required>
+        <button class="claim-btn" id="claim-btn">Claim Shift</button>
+        <p id="claim-status"></p>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const shiftId = params.get('shiftId');
+
+        document.getElementById('claim-btn').addEventListener('click', async () => {
+            const workerName = document.getElementById('worker-name').value.trim();
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch('http://localhost:8080/claimShift', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ shiftId, workerName }),
+                });
+
+                const result = await response.json();
+                document.getElementById('claim-status').textContent = result.message || 'Error claiming shift.';
+            } catch (error) {
+                console.error('Error claiming shift:', error);
+                document.getElementById('claim-status').textContent = 'Error claiming shift.';
+            }
+        });
+
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker
+              .register('./service-worker.js')
+              .then(() => console.log('Service Worker registered'))
+              .catch((error) => console.error('Service Worker registration failed:', error));
+          });
+        }
+    </script>
+</body>
+</html>

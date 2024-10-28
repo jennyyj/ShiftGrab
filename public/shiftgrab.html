@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShiftGrab</title>
+    <link rel="stylesheet" href="stylesSG.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="manifest" href="./manifest.json">
+</head>
+<body>
+    <div class="landing-page">
+        <h1><span class="shift">SHIFT</span> <span class="grab">GRAB</span></h1>
+        <p class="tagline">CONNECTING BUSINESSES TO WORKERS INSTANTLY</p>
+
+        <div class="buttons">
+            <a href="register.html">
+            <button class="join-now2">
+                <span>REGISTER NOW</span>
+                <span class="icon">➜</span>
+            </button>
+        </a>
+        <a href="login.html">
+            <button class="login">
+                <span>LOG IN</span>
+                <span class="icon">➜</span>
+            </button>
+        </a>
+        </div>
+    </div>
+    <script>
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker
+              .register('./service-worker.js')
+              .then(() => console.log('Service Worker registered'))
+              .catch((error) => console.error('Service Worker registration failed:', error));
+          });
+        }
+      </script>
+      
+</body>
+</html>

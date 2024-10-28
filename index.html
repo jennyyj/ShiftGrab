@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>ShiftGrab</title>
+        <link rel="icon" type="image/x-icon" href="isg.ico" />
+        <!--(includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-white bg-white fixed-top" id="mainNav">
+            <div class="container px-4">
+                <a class="navbar-brand" href="#page-top">ShiftGrab</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Header-->
+        <header>
+            <div class="container px-4 text-center">
+                <h1 class="fw-bolder">ShiftGrab: Connecting Businesses and Employees</h1>
+                <p class="lead1">Try our Beta Version Now! Click Below</p>
+                <a class="btn btn-lg btn-transparent" href="shiftgrab.html">Click Here</a>
+            </div>
+        </header>
+        <!-- About section-->
+        <section id="about">
+            <div class="container px-4">
+                <div class="row gx-4 justify-content-center align-items-center">
+                    <div class="col-lg-6 text-left">
+                        <h2>Empower Your Workforce</h2>
+                        <p class="lead">Welcome to ShiftGrab, the ultimate platform, connecting businesses with employees instantly. Whether you are a business looking to fill shifts or an employee searching for opportunites, ShiftGrab has you covered! Our user-friendly interface makes the process seamless and efficient, ensuring that businesses and employees find the perfect match every time!</p>
+                    </div>
+                    <div class="col-lg-6">
+                        <img src="css/images/2.jpg" class="img-fluid" alt="Workforce" />
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Services section-->
+        <section class="bg-light" id="services">
+            <div class="container px-4">
+                <div class="row gx-4 align-items-center">
+                    <div class="col-lg-6">
+                        <img src="css/images/3.jpg" class="img-fluid" alt="Service 1" /> 
+                    </div>
+                    <div class="col-lg-6">
+                        <h2>Our Services</h2>
+                        <p class="lead">Instantly connect businesses with available shifts to eager employees through ShiftGrab's innovative platform. Simplify the process of shift posting and claiming, making service work more efficient and convenient for all.</p>
+                    </div>
+                </div>
+                <hr />
+                <div class="row gx-4 align-items-center">
+                    <!-- Text Column -->
+                    <div class="col-lg-6 order-lg-1">
+                        <div class="text-content">
+                            <h3>Shift Posting Service</h3>
+                            <p class="lead">Businesses can effortlessly post available shifts on ShiftGrab, reaching a pool of eager employees ready to work. Streamline the process of filling shifts and find the right staff to meet your business needs.</p>
+                            <h4>Shift Claiming Platform</h4>
+                            <p class="lead">Employees can easily browse through available shifts, select the ones that suit their schedule, and claim them instantly. This flexibility ensures that staffing needs are efficiently met while giving employees the opportunity to choose shifts that work best for them.</p>
+                        </div>
+                    </div>
+                    <!-- Image Column -->
+                    <div class="col-lg-6 order-lg-2">
+                        <img src="css/images/4.jpg" class="img-fluid" alt="Service 2" />
+                    </div>
+                </div>
+                
+        </section>
+        <!-- Contact Section -->
+<section id="contact">
+    <div class="container px-4 py-5 bg-white">
+        <div class="row gx-4 justify-content-center">
+            <div class="col-lg-8">
+                <h2>Contact Us</h2>
+                <p class="lead">Get in touch with ShiftGrab today to streamline your shift scheduling process! Whether you are a business looking to fill open shifts or an employee seeking extra work, ShiftGrab is here to connect you effortlessly. Reach out now to experience the convenience and efficiency of our platform.</p>
+                <form id="contactForm" action="https://formspree.io/f/xpwavokv" method="POST"> 
+                    <div class="row">
+                        <!-- First Name -->
+                        <div class="col-md-6 mb-3">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="firstName" name="firstName" required>
+                        </div>
+                        <!-- Last Name -->
+                        <div class="col-md-6 mb-3">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+
+                    <!-- Business Name (Full Width) -->
+                    <div class="mb-3">
+                        <label for="businessName" class="form-label">Business Name</label>
+                        <input type="text" class="form-control" id="businessName" name="businessName" required>
+                    </div>
+
+                    <!-- Message (Full Width) -->
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+                    </div>
+
+                    <!-- Send Button -->
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+        <!-- Footer-->
+        <footer class="py-5 bg-light">
+            <div class="container px-4"><p class="m-0 text-center text-#3a73c1">Copyright &copy; ShiftGrab 2024</p></div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!--JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
