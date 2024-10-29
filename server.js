@@ -11,7 +11,7 @@ const axios = require('axios');
 const app = express();
 
 // Middleware
-app.use(cors({ origin: 'https://jennyyj.github.io' }));
+app.use(cors({ origin: ['https://jennyyj.github.io', 'https://shiftgrab.onrender.com'] }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from /public
 
@@ -230,6 +230,10 @@ app.use((req, res) => {
 // New route for claiming a shift
 app.post('/claimShift', authenticateToken, async (req, res) => {
     const { shiftId, workerName } = req.body;
+
+    // Log shiftId and workerName to confirm they're being received
+    console.log('Shift ID:', shiftId);
+    console.log('Worker Name:', workerName);
 
     try {
         const job = await Job.findById(shiftId);
