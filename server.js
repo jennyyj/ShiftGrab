@@ -171,7 +171,7 @@ app.post('/postJob', authenticateToken, async (req, res) => {
         const savedJob = await job.save(); // Save the job and get the result back
 
         // Update the message with the saved job's ID
-        const message = `New Shift: ${businessName} - ${jobDescription} on ${datetime}. Claim the shift: http://localhost:8080/claimShift/${savedJob._id}`;
+        const message = `New Shift: ${businessName} - ${jobDescription} on ${datetime}. Claim the shift: https://shiftgrab.onrender.com/claimShift/${savedJob._id}`;
 
         // Send SMS notifications
         const smsPromises = relevantNumbers.map(({ number }) => sendTextBeltSMS(number, message));
