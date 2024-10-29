@@ -11,6 +11,7 @@ const axios = require('axios');
 const app = express();
 
 // Middleware
+app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from /public
@@ -233,38 +234,34 @@ app.use((req, res) => {
 app.post('/claimShift', async (req, res) => {
     const { shiftId, workerName } = req.body;
 
-    console.log('Shift claim request received:', req.body);
-
     try {
         const job = await Job.findById(shiftId);
         if (!job) return res.status(404).json({ message: 'Shift not found.' });
 
+        if (job.claimedBy) return res.status(400).json({ message: 'Shift already claimed.' });
+
         const user = await User.findById(job.user);
         if (!user) return res.status(404).json({ message: 'User not found.' });
 
-        // Optional: Add a check if the shift has already been claimed
-        if (job.claimedBy) {
-            return res.status(400).json({ message: 'This shift has already been claimed.' });
-        }
-
-        // Update the job to mark it as claimed
         job.claimedBy = workerName;
         job.claimedAt = new Date();
         await job.save();
 
         const message = `The shift at ${job.businessName} has been claimed by ${workerName}.`;
-
-        // Send notifications to relevant phone numbers
-        const relevantNumbers = user.phoneNumbers.filter(pn => pn.category === job.category);
-        if (relevantNumbers.length > 0) {
-            const smsPromises = relevantNumbers.map(({ number }) =>
-                sendTextBeltSMS(number, message)
+        const smsPromises = user.phoneNumbers
+            .filter(pn => pn.category === job.category)
+            .map(({ number }) =>
+                axios.post('https://textbelt.com/text', {
+                    phone: number,
+                    message,
+                    key: process.env.TEXTBELT_API_KEY
+                })
             );
-            await Promise.all(smsPromises);
-        }
 
-        res.status(200).json({ 
-            message: 'Shift claimed successfully! The business owner has been notified.',
+        await Promise.all(smsPromises);
+
+        res.status(200).json({
+            message: 'Shift claimed successfully!',
             jobDetails: {
                 businessName: job.businessName,
                 datetime: job.datetime,
@@ -272,10 +269,13 @@ app.post('/claimShift', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error claiming shift:', error);
+        console.error('Error:', error);
         res.status(500).json({ message: 'Error claiming shift. Please try again.' });
     }
 });
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Function to send push notifications
 function sendPushNotification(username, message) {
