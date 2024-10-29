@@ -18,9 +18,11 @@
     </div>
 
     <script>
+        // Extract shiftId from URL
         const params = new URLSearchParams(window.location.search);
         const shiftId = params.get('shiftId');
 
+        // Handle shift claim
         document.getElementById('claim-btn').addEventListener('click', async () => {
             const workerName = document.getElementById('worker-name').value.trim();
             const token = localStorage.getItem('token');
@@ -30,26 +32,32 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ shiftId, workerName }),
+                    body: JSON.stringify({ shiftId, workerName })
                 });
 
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error claiming shift.');
+                }
+
                 const result = await response.json();
-                document.getElementById('claim-status').textContent = result.message || 'Error claiming shift.';
+                document.getElementById('claim-status').textContent = result.message;
             } catch (error) {
                 console.error('Error claiming shift:', error);
-                document.getElementById('claim-status').textContent = 'Error claiming shift.';
+                document.getElementById('claim-status').textContent = error.message;
             }
         });
 
+        // Register Service Worker
         if ('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker
-              .register('./service-worker.js')
-              .then(() => console.log('Service Worker registered'))
-              .catch((error) => console.error('Service Worker registration failed:', error));
-          });
+            window.addEventListener('load', () => {
+                navigator.serviceWorker
+                    .register('./service-worker.js')
+                    .then(() => console.log('Service Worker registered'))
+                    .catch(error => console.error('Service Worker registration failed:', error));
+            });
         }
     </script>
 </body>
