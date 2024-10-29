@@ -35,7 +35,9 @@ const Job = mongoose.model('Job', new mongoose.Schema({
     datetime: { type: Date, required: true },
     category: { type: String, required: true },
     fileUrl: String,
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    claimedBy: { type: String },
+    claimedAt: { type: Date }
 }));
 
 // Connect to MongoDB and start the server
@@ -240,30 +242,40 @@ app.post('/claimShift', async (req, res) => {
         const user = await User.findById(job.user);
         if (!user) return res.status(404).json({ message: 'User not found.' });
 
-        const relevantNumbers = user.phoneNumbers.filter(pn => pn.category === job.category);
-        if (relevantNumbers.length === 0) {
-            return res.status(404).json({ message: `No workers found in category: ${job.category}.` });
+        // Optional: Add a check if the shift has already been claimed
+        if (job.claimedBy) {
+            return res.status(400).json({ message: 'This shift has already been claimed.' });
         }
+
+        // Update the job to mark it as claimed
+        job.claimedBy = workerName;
+        job.claimedAt = new Date();
+        await job.save();
 
         const message = `The shift at ${job.businessName} has been claimed by ${workerName}.`;
 
-        const smsPromises = relevantNumbers.map(({ number }) =>
-            axios.post('https://textbelt.com/text', {
-                phone: number,
-                message,
-                key: process.env.TEXTBELT_API_KEY
-            })
-        );
+        // Send notifications to relevant phone numbers
+        const relevantNumbers = user.phoneNumbers.filter(pn => pn.category === job.category);
+        if (relevantNumbers.length > 0) {
+            const smsPromises = relevantNumbers.map(({ number }) =>
+                sendTextBeltSMS(number, message)
+            );
+            await Promise.all(smsPromises);
+        }
 
-        await Promise.all(smsPromises);
-
-        res.status(200).json({ message: 'Shift claimed and notifications sent.' });
+        res.status(200).json({ 
+            message: 'Shift claimed successfully! The business owner has been notified.',
+            jobDetails: {
+                businessName: job.businessName,
+                datetime: job.datetime,
+                jobDescription: job.jobDescription
+            }
+        });
     } catch (error) {
         console.error('Error claiming shift:', error);
-        res.status(500).json({ message: 'Error claiming shift.' });
+        res.status(500).json({ message: 'Error claiming shift. Please try again.' });
     }
 });
-
 
 // Function to send push notifications
 function sendPushNotification(username, message) {
