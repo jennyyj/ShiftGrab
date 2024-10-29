@@ -16,10 +16,10 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from /public
 
 // JWT Secret Key
-const JWT_SECRET = 'U-AH7E;T#)NMe}A';
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 
 // MongoDB connection URI
-const uri = "mongodb+srv://jjacob:Blueshark1@shiftgrab.3g9hd.mongodb.net/ShiftGrab?retryWrites=true&w=majority";
+const uri = process.env.MONGODB_URI;
 
 // Mongoose Models
 const User = mongoose.model('User', new mongoose.Schema({
@@ -75,6 +75,9 @@ app.get('/post-job', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'post-job.html'));
 });
 
+// variable for the TextBelt API key
+const TEXTBELT_API_KEY = process.env.TEXTBELT_API_KEY;
+
 // Function to send SMS via TextBelt
 async function sendTextBeltSMS(phoneNumber, message) {
     if (!phoneNumber) {
@@ -88,7 +91,7 @@ async function sendTextBeltSMS(phoneNumber, message) {
         const response = await axios.post('https://textbelt.com/text', {
             phone: phoneNumber,
             message: message,
-            key: 'c7691fc1eaa48648e700ab0a6b831ef0bbbb8315ZqGgWUQ1jCwZtIB0DWt82Lo7W'
+            key: TEXTBELT_API_KEY
         });
 
         if (response.data.success) {
@@ -254,3 +257,7 @@ function sendPushNotification(username, message) {
     // Placeholder function - integrate a push notification service like Firebase later
     console.log(`Push notification sent to ${username}: ${message}`);
 }
+
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
