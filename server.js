@@ -231,36 +231,52 @@ app.use((req, res) => {
 app.post('/claimShift', authenticateToken, async (req, res) => {
     const { shiftId, workerName } = req.body;
 
-    // Log shiftId and workerName to confirm they're being received
+    // Log shiftId and workerName to ensure the request body is correct
     console.log('Shift ID:', shiftId);
     console.log('Worker Name:', workerName);
 
     try {
+        // Find the job with the provided shiftId
         const job = await Job.findById(shiftId);
         if (!job) {
             return res.status(404).json({ message: 'Shift not found.' });
         }
 
+        // Compose a message indicating that the shift has been claimed
         const message = `The shift at ${job.businessName} has been claimed by ${workerName}.`;
 
-        // Notify all workers in the same category
+        // Find the user who posted the job
         const user = await User.findById(job.user);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // Get all phone numbers matching the job's category
         const relevantNumbers = user.phoneNumbers.filter(pn => pn.category === job.category);
-        const smsPromises = relevantNumbers.map(({ number }) =>
+        
+        if (relevantNumbers.length === 0) {
+            return res.status(404).json({ message: `No workers found in category: ${job.category}.` });
+        }
+
+        // Send SMS to each relevant number
+        const smsPromises = relevantNumbers.map(({ number }) => 
             sendTextBeltSMS(number, message)
         );
-
         await Promise.all(smsPromises);
 
+        // Send the success response
         res.status(200).json({ message: 'Shift claimed and notifications sent.' });
 
-        // Send a push notification to the account holder (PWA)
+        // Log and send a push notification (optional)
+        console.log(`Shift claimed: ${shiftId} by ${workerName}`);
         sendPushNotification(user.username, message);
+
     } catch (error) {
         console.error('Error claiming shift:', error);
         res.status(500).json({ message: 'Error claiming shift.' });
     }
 });
+
 
 // Function to send push notifications
 function sendPushNotification(username, message) {
