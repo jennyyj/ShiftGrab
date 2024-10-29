@@ -78,7 +78,7 @@ app.get('/post-job', (req, res) => {
 });
 
 app.get('/claimShift', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'shiftClaim.html'));
+    res.sendFile(path.join(__dirname, 'public', 'claimShift.html'));
 });
 
 // variable for the TextBelt API key
