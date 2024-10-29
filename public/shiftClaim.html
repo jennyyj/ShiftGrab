@@ -20,7 +20,6 @@
     <script>
         const params = new URLSearchParams(window.location.search);
         const shiftId = params.get('shiftId');
-        body: JSON.stringify({ shiftId, workerName }),
 
         document.getElementById('claim-btn').addEventListener('click', async () => {
             const workerName = document.getElementById('worker-name').value.trim();
