@@ -1,11 +1,11 @@
 const CACHE_NAME = 'shiftgrab-cache-v1';
 const urlsToCache = [
   '/',
-  './login.html',
-  './register.html',
-  './stylesSG.css',
-  './scriptSG.js',
-  './claimShift.html'
+  'public/login.html',
+  'public/register.html',
+  'public/stylesSG.css',
+  'public/scriptSG.js',
+  'public/claimShift.html'
 ];
 
 
