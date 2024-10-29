@@ -1,3 +1,4 @@
+// 3. Update your claimShift.html with better error handling and token checking:
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,23 +11,45 @@
 <body>
     <div class="container">
         <h1>Claim Shift</h1>
-        <p id="shift-details">Enter your name to claim this shift</p>
-
-        <input type="text" id="worker-name" placeholder="Enter your name" required>
-        <button class="claim-btn" id="claim-btn">Claim Shift</button>
-        <p id="claim-status"></p>
+        <div id="login-message" style="display: none;">
+            <p>Please log in to claim this shift</p>
+            <a href="/login" class="login-btn">Login</a>
+        </div>
+        <div id="claim-form" style="display: none;">
+            <p id="shift-details">Enter your name to claim this shift</p>
+            <input type="text" id="worker-name" placeholder="Enter your name" required>
+            <button class="claim-btn" id="claim-btn">Claim Shift</button>
+            <p id="claim-status"></p>
+        </div>
     </div>
-
     <script>
+        // Check authentication status immediately
+        const token = localStorage.getItem('token');
+        const claimForm = document.getElementById('claim-form');
+        const loginMessage = document.getElementById('login-message');
+
+        if (!token) {
+            loginMessage.style.display = 'block';
+            claimForm.style.display = 'none';
+        } else {
+            loginMessage.style.display = 'none';
+            claimForm.style.display = 'block';
+        }
+
         const params = new URLSearchParams(window.location.search);
-        const shiftId = params.get('shiftId'); // Extract shiftId from URL
+        const shiftId = params.get('shiftId');
+
+        if (!shiftId) {
+            document.getElementById('claim-status').textContent = 'Invalid shift link.';
+            document.getElementById('claim-btn').disabled = true;
+        }
 
         document.getElementById('claim-btn').addEventListener('click', async () => {
             const workerName = document.getElementById('worker-name').value.trim();
-            const token = localStorage.getItem('token');
-
-            if (!shiftId) {
-                document.getElementById('claim-status').textContent = 'Shift ID not found.';
+            const statusElement = document.getElementById('claim-status');
+            
+            if (!workerName) {
+                statusElement.textContent = 'Please enter your name.';
                 return;
             }
 
@@ -40,25 +63,37 @@
                     body: JSON.stringify({ shiftId, workerName })
                 });
 
+                if (response.status === 401 || response.status === 403) {
+                    // Token expired or invalid
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                    return;
+                }
+
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || 'Error claiming shift.');
                 }
 
                 const result = await response.json();
-                document.getElementById('claim-status').textContent = result.message;
+                statusElement.textContent = result.message;
+                statusElement.style.color = 'green';
+                document.getElementById('claim-btn').disabled = true;
+
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('claim-status').textContent = error.message;
+                statusElement.textContent = error.message;
+                statusElement.style.color = 'red';
             }
         });
 
-        if ('serviceWorker' in navigator) {
+        // Only register service worker if necessary
+        if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
             window.addEventListener('load', () => {
                 navigator.serviceWorker
-                    .register('./service-worker.js')
+                    .register('/service-worker.js')
                     .then(() => console.log('Service Worker registered'))
-                    .catch(error => console.error('Service Worker registration failed:', error));
+                    .catch(error => console.log('Service Worker registration skipped:', error));
             });
         }
     </script>
