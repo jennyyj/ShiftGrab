@@ -11,7 +11,7 @@ const axios = require('axios');
 const app = express();
 
 // Middleware
-app.use(cors({ origin: ['https://jennyyj.github.io', 'https://shiftgrab.onrender.com'] }));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from /public
 
