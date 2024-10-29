@@ -42,10 +42,10 @@ const Job = mongoose.model('Job', new mongoose.Schema({
 }));
 
 // Connect to MongoDB and start the server
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(uri)
     .then(() => {
         console.log('Successfully connected to MongoDB Atlas');
-        const PORT = process.env.PORT || 8080;
+        const PORT = process.env.PORT || 10000;
         app.listen(PORT, () => {
             console.log(`Server running on http://localhost:${PORT}`);
         });
