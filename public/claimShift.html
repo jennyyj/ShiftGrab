@@ -10,7 +10,7 @@
 <body>
     <div class="container">
         <h1>Claim Shift</h1>
-        <p id="shift-details"></p>
+        <p id="shift-details">Enter your name to claim this shift</p>
 
         <input type="text" id="worker-name" placeholder="Enter your name" required>
         <button class="claim-btn" id="claim-btn">Claim Shift</button>
@@ -18,14 +18,17 @@
     </div>
 
     <script>
-        // Extract shiftId from URL
         const params = new URLSearchParams(window.location.search);
         const shiftId = params.get('shiftId');
 
-        // Handle shift claim
         document.getElementById('claim-btn').addEventListener('click', async () => {
             const workerName = document.getElementById('worker-name').value.trim();
             const token = localStorage.getItem('token');
+
+            if (!shiftId) {
+                document.getElementById('claim-status').textContent = 'Shift ID not found in URL.';
+                return;
+            }
 
             try {
                 const response = await fetch('https://shiftgrab.onrender.com/claimShift', {
@@ -45,12 +48,11 @@
                 const result = await response.json();
                 document.getElementById('claim-status').textContent = result.message;
             } catch (error) {
-                console.error('Error claiming shift:', error);
-                document.getElementById('claim-status').textContent = error.message;
+                console.error('Error:', error);
+                document.getElementById('claim-status').textContent = error.message || 'Error claiming shift.';
             }
         });
 
-        // Register Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker
