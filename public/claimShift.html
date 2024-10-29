@@ -19,14 +19,14 @@
 
     <script>
         const params = new URLSearchParams(window.location.search);
-        const shiftId = params.get('shiftId');
+        const shiftId = params.get('shiftId'); // Extract shiftId from URL
 
         document.getElementById('claim-btn').addEventListener('click', async () => {
             const workerName = document.getElementById('worker-name').value.trim();
             const token = localStorage.getItem('token');
 
             if (!shiftId) {
-                document.getElementById('claim-status').textContent = 'Shift ID not found in URL.';
+                document.getElementById('claim-status').textContent = 'Shift ID not found.';
                 return;
             }
 
@@ -49,7 +49,7 @@
                 document.getElementById('claim-status').textContent = result.message;
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('claim-status').textContent = error.message || 'Error claiming shift.';
+                document.getElementById('claim-status').textContent = error.message;
             }
         });
 
