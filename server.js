@@ -228,7 +228,7 @@ app.use((req, res) => {
 });
 
 // Claim Shift Route
-app.post('/claimShift', authenticateToken, async (req, res) => {
+app.post('/claimShift', async (req, res) => {
     const { shiftId, workerName } = req.body;
 
     console.log('Shift claim request received:', req.body);
@@ -263,6 +263,7 @@ app.post('/claimShift', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Error claiming shift.' });
     }
 });
+
 
 // Function to send push notifications
 function sendPushNotification(username, message) {
