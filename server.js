@@ -238,8 +238,9 @@ app.post('/claimShift', authenticateToken, async (req, res) => {
         if (!job) return res.status(404).json({ message: 'Shift not found.' });
 
         const user = await User.findById(job.user);
-        const relevantNumbers = user.phoneNumbers.filter(pn => pn.category === job.category);
+        if (!user) return res.status(404).json({ message: 'User not found.' });
 
+        const relevantNumbers = user.phoneNumbers.filter(pn => pn.category === job.category);
         if (relevantNumbers.length === 0) {
             return res.status(404).json({ message: `No workers found in category: ${job.category}.` });
         }
@@ -250,7 +251,7 @@ app.post('/claimShift', authenticateToken, async (req, res) => {
             axios.post('https://textbelt.com/text', {
                 phone: number,
                 message,
-                key: TEXTBELT_API_KEY
+                key: process.env.TEXTBELT_API_KEY
             })
         );
 
