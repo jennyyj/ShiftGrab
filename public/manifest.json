@@ -3,16 +3,16 @@
     "short_name": "ShiftGrab",
     "start_url": "./login.html",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#007bff",
+    "background_color": "#000000",
+    "theme_color": "#ffffff",
     "icons": [
       {
-        "src": "./icons/icon-192.png",
+        "src": "./icons/C.png",
         "sizes": "192x192",
         "type": "image/png"
       },
       {
-        "src": "./icons/icon-512.png",
+        "src": "./icons/C.png",
         "sizes": "512x512",
         "type": "image/png"
       }
