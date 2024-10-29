@@ -11,7 +11,7 @@ const axios = require('axios');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: 'https://jennyyj.github.io' }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from /public
 
@@ -215,6 +215,7 @@ app.post('/deletePhoneNumber', authenticateToken, async (req, res) => {
     res.json({ phoneNumbers: user.phoneNumbers });
 });
 
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
 // Catch-all route for undefined routes
 app.use((req, res) => {
@@ -257,7 +258,3 @@ function sendPushNotification(username, message) {
     // Placeholder function - integrate a push notification service like Firebase later
     console.log(`Push notification sent to ${username}: ${message}`);
 }
-
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
-});
