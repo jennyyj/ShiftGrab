@@ -45,7 +45,7 @@ async function handleJobPost(e) {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/postJob', {
+        const response = await fetch('https://shiftgrab-backend.onrender.com/postJob', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ function resetForm() {
 // Fetch and display jobs
 function fetchJobs() {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:8080/getJobs', {
+    fetch('https://shiftgrab-backend.onrender.com/getJobs', {
         headers: { 'Authorization': `Bearer ${token}` },
     })
         .then((response) => response.json())
@@ -117,7 +117,7 @@ function toggleDropdown() {
 function viewPhoneNumbers() {
     console.log("View Phone Numbers button clicked"); // Check if this logs
     const token = localStorage.getItem('token');
-    fetch('http://localhost:8080/getPhoneNumbers', {
+    fetch('https://shiftgrab-backend.onrender.com/getPhoneNumbers', {
         headers: { 'Authorization': `Bearer ${token}` },
     })
     .then(response => response.json())
@@ -149,7 +149,7 @@ function displayPhoneNumbers(phoneNumbers) {
 
 async function deletePhoneNumber(number) {
     const token = localStorage.getItem('token');
-    await fetch('http://localhost:8080/deletePhoneNumber', {
+    await fetch('https://shiftgrab-backend.onrender.com/deletePhoneNumber', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ number }),
@@ -168,7 +168,7 @@ async function saveNewPhoneNumber() {
     const category = document.getElementById('new-phone-category').value;
 
     const token = localStorage.getItem('token');
-    await fetch('http://localhost:8080/addPhoneNumber', {
+    await fetch('https://shiftgrab-backend.onrender.com/addPhoneNumber', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, number, category }),
