@@ -1,12 +1,13 @@
 const CACHE_NAME = 'shiftgrab-cache-v1';
 const urlsToCache = [
-  './',
-  './login.html',
-  './register.html',
-  './stylesSG.css',
-  './scriptSG.js',
-  './shiftgrab.html'
+  '/',
+  '/login.html',
+  '/register.html',
+  '/stylesSG.css',
+  '/scriptSG.js',
+  '/claimShift.html'
 ];
+
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
