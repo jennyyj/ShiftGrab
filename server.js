@@ -232,6 +232,7 @@ app.post('/claimShift', authenticateToken, async (req, res) => {
     const { shiftId, workerName } = req.body;
 
     // Log shiftId and workerName to ensure the request body is correct
+    console.log('Shift claim request received:', req.body);
     console.log('Shift ID:', shiftId);
     console.log('Worker Name:', workerName);
 
