@@ -39,11 +39,13 @@ const Job = mongoose.model('Job', new mongoose.Schema({
 }));
 
 // Connect to MongoDB and start the server
-mongoose.connect(uri)
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         console.log('Successfully connected to MongoDB Atlas');
         const PORT = process.env.PORT || 8080;
-        app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+        app.listen(PORT, () => {
+            console.log(`Server running on http://localhost:${PORT}`);
+        });
     })
     .catch(err => {
         console.error('Failed to connect to MongoDB Atlas:', err);
