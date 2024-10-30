@@ -5,8 +5,8 @@
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/server.js" },  // Handle API routes
-    { "src": "/", "dest": "/public/shiftgrab.html" },  // Default to shiftgrab.html
-    { "src": "/(.*)", "dest": "/public/$1" }  // Serve static files from public
+    { "src": "/api/(.*)", "dest": "/server.js" },  
+    { "src": "/", "dest": "/public/shiftgrab.html" },  
+    { "src": "/(.*)", "dest": "/public/$1" }  
   ]
 }
