@@ -1,7 +1,7 @@
 {
     "name": "ShiftGrab",
     "short_name": "ShiftGrab",
-    "start_url": "./login.html",
+    "start_url": "./shiftgrab.html",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#ffffff",
