@@ -45,7 +45,7 @@ const Job = mongoose.model('Job', new mongoose.Schema({
 mongoose.connect(uri)
     .then(() => {
         console.log('Successfully connected to MongoDB Atlas');
-        const PORT = process.env.PORT;  // render's dynamic PORT
+        const PORT = process.env.PORT || 3000;  // render's dynamic PORT
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
         });
