@@ -68,19 +68,19 @@ function authenticateToken(req, res, next) {
 }
 
 // Serve HTML Pages from the Public Directory
-app.get('/login', (req, res) => {
+app.get('/api/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-app.get('/register', (req, res) => {
+app.get('/api/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
 
-app.get('/post-job', (req, res) => {
+app.get('/api/post-job', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'post-job.html'));
 });
 
-app.get('/claimShift', (req, res) => {
+app.get('/api/claimShift', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'claimShift.html'));
 });
 
@@ -115,7 +115,7 @@ async function sendTextBeltSMS(phoneNumber, message) {
 
 // API Routes
 
-app.post('/register', async (req, res) => {
+app.post('/api/register', async (req, res) => {
     const { username, password, phoneNumbers } = req.body;
 
     try {
@@ -132,7 +132,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
 
     try {
@@ -148,7 +148,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.post('/postJob', authenticateToken, async (req, res) => {
+app.post('/api/postJob', authenticateToken, async (req, res) => {
     const { businessName, jobDescription, datetime, category } = req.body;
 
     try {
@@ -191,7 +191,7 @@ app.post('/postJob', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/getJobs', authenticateToken, async (req, res) => {
+app.get('/api/getJobs', authenticateToken, async (req, res) => {
     try {
         const jobs = await Job.find({ user: req.user._id });
         res.status(200).json(jobs);
@@ -200,12 +200,12 @@ app.get('/getJobs', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/getPhoneNumbers', authenticateToken, async (req, res) => {
+app.get('/api/getPhoneNumbers', authenticateToken, async (req, res) => {
     const user = await User.findOne({ username: req.user.username });
     res.json(user.phoneNumbers);
 });
 
-app.post('/addPhoneNumber', authenticateToken, async (req, res) => {
+app.post('/api/addPhoneNumber', authenticateToken, async (req, res) => {
     const { name, number, category } = req.body;
     const user = await User.findOne({ username: req.user.username });
 
@@ -214,7 +214,7 @@ app.post('/addPhoneNumber', authenticateToken, async (req, res) => {
     res.json({ phoneNumbers: user.phoneNumbers });
 });
 
-app.post('/deletePhoneNumber', authenticateToken, async (req, res) => {
+app.post('/api/deletePhoneNumber', authenticateToken, async (req, res) => {
     const { number } = req.body;
     const user = await User.findOne({ username: req.user.username });
 
@@ -223,15 +223,20 @@ app.post('/deletePhoneNumber', authenticateToken, async (req, res) => {
     res.json({ phoneNumbers: user.phoneNumbers });
 });
 
-app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
 
 // Catch-all route for undefined routes
-app.use((req, res) => {
-    res.status(404).send('Page not found');
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ message: 'API route not found' });
+  }
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));  // Serve a custom 404 page
 });
 
 // Claim Shift Route
-app.post('/claimShift', async (req, res) => {
+app.post('/api/claimShift', async (req, res) => {
     const { shiftId, workerName } = req.body;
 
     try {
