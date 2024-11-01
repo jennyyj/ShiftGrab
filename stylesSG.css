@@ -1,0 +1,427 @@
+/* Reset styling for a clean slate */
+* {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Ensure body and html can scroll */
+html, body {
+    height: 100vh; /* Ensure the full height is considered */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    overflow-y: auto; 
+    flex-direction: column;
+}
+
+/* Style the main container to prevent it from stretching too much */
+.container {
+    max-width: 600px; /* Set a reasonable max width */
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    flex: 1;
+    text-align: center;
+}
+
+/* Ensure form elements and buttons are properly spaced */
+form {
+    margin-bottom: 20px; /* Add spacing below the form */
+}
+
+hr {
+    border: none;
+    border-top: 2px solid #52ace4;
+    margin: 20px 0; /* Add space above and below the line */
+}
+ 
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: white;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.landing-page {
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    margin: auto;
+}
+
+h1 {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #3a73c1; /* Set color to match design */
+    font-size: 36px; /* Optional: Adjust size for better appearance */
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%; /* Ensures the group stays aligned */
+}
+
+/* Styling for all input fields consistently */
+input[type="text"], input[type="password"], textarea, select {
+    width: 90%; /* Make inputs smaller while keeping them aligned */
+    max-width: 350px; /* Control the maximum size */
+    padding: 12px; /* Slightly smaller padding */
+    margin: 10px 0;
+    border: 2px solid #3a73c1;
+    border-radius: 50px;
+    font-size: 16px; /* Adjust font size */
+    box-sizing: border-box;
+    text-align: center;
+    color: #52ace4; /* Same text color */
+    background-color: transparent; /* Transparent background for uniformity */
+    appearance: none; /* Remove default styling for dropdowns */
+    -webkit-appearance: none; /* WebKit browsers */
+    -moz-appearance: none; 
+    margin-right: 10%;
+}
+
+/* Placeholder text color for textarea */
+textarea::placeholder {
+    color: #52ace4; /* Match the other input placeholder colors */
+}
+
+/* Style select dropdown arrow */
+select {
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"%3E%3Cpath d="M7 10l5 5 5-5z" fill="%238AB6F8"/%3E%3C/svg%3E');
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 18px;
+    padding-right: 40px; /* Space for the arrow */
+}
+
+
+/* Buttons styling */
+button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #52ace4;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+/* Styling for the smaller Add More button */
+.add-more-btn {
+    width: 30%; /* Make it smaller */
+    padding: 12px; /* Smaller padding */
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 15px;
+    margin-top: 15px;
+    font-size: 16px; /* Adjust font size */
+    border: 2px solid #52ace4;
+    color: #52ace4;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Optional hover effect for the Add More button */
+.add-more-btn:hover {
+    background-color: #e0f7ff;
+}
+
+.login {
+    color: #3a73c1;
+    border-color: #3a73c1;
+}
+
+.login .icon {
+    font-size: 20px;
+    margin-left: 10px;
+}
+
+/* Hover Effects */
+button:hover {
+    background-color: #f0f8ff;
+}
+
+/* Footer text styling */
+.footer-text {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #3a73c1;
+    font-size: 14px;
+}
+
+.footer-text a {
+    text-decoration: none;
+    color: #52ace4;
+}
+
+/* Styling the placeholder text */
+input::placeholder {
+    color: #52ace4; /* Replace with any color you prefer */
+    opacity: 0.5; /* Ensures the color is fully opaque */
+}
+
+/* Styling the typed text */
+input {
+    color: #52ace4; /* Change to any color you prefer */
+}
+
+/* Optional: Ensure consistency across browsers */
+input:-ms-input-placeholder { /* For Internet Explorer */
+    color: #52ace4;
+    opacity: 0.5;
+}
+
+input::-ms-input-placeholder { /* For Microsoft Edge */
+    color: #52ace4;
+    opacity: 0.5;
+}
+
+/* Reset styling for a clean slate */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: white;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.landing-page {
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    margin: auto;
+}
+
+h1 {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.shift {
+    color: #3a73c1;
+    font-size: 48px;
+}
+
+.grab {
+    color: #52ace4;
+    font-size: 48px;
+}
+
+.tagline {
+    color: #3a73c1;
+    font-weight: bold;
+    margin: 20px 0 40px;
+    font-size: 14px;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+
+/* register styling */
+button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #3a73c1;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+/* Remove underline from all anchor links */
+a {
+    text-decoration: none;
+    color: inherit; /* Inherit the color from the parent element */
+}
+
+/* Join Now Button */
+.join-now {
+    color: #3a73c1;
+}
+
+.join-now2 {
+    color: #52ace4;
+    border: 2px solid #52ace4;
+}
+
+.join-now .icon {
+    font-size: 20px;
+    margin-left: 10px;
+}
+
+/* Log In Button */
+.login {
+    color: #3a73c1;
+    border-color: #3a73c1;
+}
+
+.login .icon {
+    font-size: 20px;
+    margin-left: 10px;
+}
+
+/* Hover Effects */
+button:hover {
+    background-color: #f0f8ff;
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 36px;
+    }
+    button {
+        font-size: 16px;
+    }
+}
+
+button.login {
+    margin-bottom: 20px; /* Add space below the button */
+}
+
+/* Styling the line (divider) */
+hr {
+    border: none;
+    border-top: 2px solid #52ace4; /* Blue line to match design */
+    margin: 20px 0; /* Add spacing above and below the line */
+}
+
+/* Styling the "Manage Your Phone Numbers" heading */
+.manage-heading {
+    font-weight: bold;
+    color: #3a73c1; /* Change text color to blue */
+    margin-bottom: 15px; /* Add spacing below the heading */
+    text-align: center;
+}
+
+/* Flex container for the two buttons */
+.button-group {
+    display: flex;
+    justify-content: column; /* Align buttons to the right */
+    align-items: flex-end;
+    gap: 20px; /* Add spacing between the buttons */
+    margin-top: 15px; /* Add some spacing above the buttons */
+}
+
+/* Smaller button styles */
+button.small-button {
+    width: 35%; /* Make the buttons smaller */
+    padding: 12px; /* Adjust padding to make them more compact */
+    border: 2px solid #52ace4;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #52ace4;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Hover effect */
+button.small-button:hover {
+    background-color: #f0f8ff;
+}
+
+h1.post-shift-heading {
+    text-align: center; /* Center the text */
+    color: #3a73c1; /* Optional: Blue color */
+    font-weight: bold;
+    margin-bottom: 20px; /* Add spacing below the header */
+}
+
+.add-phone-numbers {
+    font-size: 24px; 
+    color: #3a73c1; 
+    font-weight: 600;
+    margin: 20px 0; 
+    text-align: center; 
+}
+
+#phone-list {
+    padding: 0;
+}
+
+.phone-item {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 12px; 
+    margin-bottom: 10px; 
+    font-size: 16px;
+    color: #3a73c1; 
+    border: none; 
+    box-shadow: none; 
+}
+
+/* Delete button styling */
+.delete-button {
+    background-color: transparent;
+    border: 2px solid #52ace4; 
+    border-radius: 50px;
+    padding: 4px 8px; 
+    font-size: 14px;
+    font-weight: bold;
+    justify-content: center;
+    align-items: center;
+    color: #52ace4;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: auto; 
+    min-width: 80px; 
+}
+
+.delete-button:hover {
+    background-color: #ff5b5b;
+}
+
+/* Style the Claim Shift button */
+#claim-btn {
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    width: 100%; 
+    padding: 15px;
+    border: 2px solid #3a73c1; 
+    border-radius: 50px; 
+    font-size: 18px;
+    font-weight: bold;
+    color: #3a73c1; 
+    background-color: transparent; 
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Optional: Add a hover effect */
+#claim-btn:hover {
+    background-color: #e0f0ff; 
+}
