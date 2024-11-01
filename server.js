@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const cors = require('cors');
+const cors = require('cors');  // Only declare this once
 const bodyParser = require('body-parser');
 const path = require('path');
 const axios = require('axios');
@@ -12,19 +12,14 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'https://shift-grab-git-main-jennyyjs-projects.vercel.app'  // Allow specific frontend URL
+}));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from /public
 
 // JWT Secret Key
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
-
-// Allow cors into backend
-const cors = require('cors');
-app.use(cors({
-  origin: 'https://shift-grab-git-main-jennyyjs-projects.vercel.app'  // Allow specific frontend URL
-}));
-
 
 // MongoDB connection URI
 const uri = process.env.MONGODB_URI;
@@ -52,7 +47,7 @@ const Job = mongoose.model('Job', new mongoose.Schema({
 mongoose.connect(uri)
     .then(() => {
         console.log('Successfully connected to MongoDB Atlas');
-        const PORT = process.env.PORT || 3000;  // render's dynamic PORT
+        const PORT = process.env.PORT || 3000;
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
         });
@@ -91,7 +86,7 @@ app.get('/api/claimShift', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'claimShift.html'));
 });
 
-// variable for the TextBelt API key
+// TextBelt API key
 const TEXTBELT_API_KEY = process.env.TEXTBELT_API_KEY;
 
 // Function to send SMS via TextBelt
@@ -101,8 +96,7 @@ async function sendTextBeltSMS(phoneNumber, message) {
         return;
     }
 
-    console.log(`Sending SMS to: ${phoneNumber}`); // Debugging log
-
+    console.log(`Sending SMS to: ${phoneNumber}`);
     try {
         const response = await axios.post('https://textbelt.com/text', {
             phone: phoneNumber,
@@ -121,7 +115,6 @@ async function sendTextBeltSMS(phoneNumber, message) {
 }
 
 // API Routes
-
 app.post('/api/register', async (req, res) => {
     const { username, password, phoneNumbers } = req.body;
 
