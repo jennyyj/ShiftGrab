@@ -217,13 +217,6 @@ app.post('deletePhoneNumber', authenticateToken, async (req, res) => {
     res.json({ phoneNumbers: user.phoneNumbers });
 });
 
-app.get('health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
-});
-
-  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
-});
-
 // Claim Shift Route
 app.post('claimShift', async (req, res) => {
     const { shiftId, workerName } = req.body;
