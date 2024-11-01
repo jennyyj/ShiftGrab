@@ -19,6 +19,13 @@ app.use(express.static(path.join(__dirname, 'public'))); // Serve static files f
 // JWT Secret Key
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 
+// Allow cors into backend
+const cors = require('cors');
+app.use(cors({
+  origin: 'https://shift-grab-git-main-jennyyjs-projects.vercel.app'  // Allow specific frontend URL
+}));
+
+
 // MongoDB connection URI
 const uri = process.env.MONGODB_URI;
 
