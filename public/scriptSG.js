@@ -45,7 +45,7 @@ async function handleJobPost(e) {
     }
 
     try {
-        const response = await fetch('https://shift-grab.vercel.app/api/postJob', {
+        const response = await fetch('https://shift-grab.vercel.app/postJob', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ function resetForm() {
 // Fetch and display jobs
 function fetchJobs() {
     const token = localStorage.getItem('token');
-    fetch('https://shift-grab.vercel.app/api/getJobs', {
+    fetch('https://shift-grab.vercel.app/getJobs', {
         headers: { 'Authorization': `Bearer ${token}` },
     })
         .then((response) => response.json())
@@ -117,7 +117,7 @@ function toggleDropdown() {
 function viewPhoneNumbers() {
     console.log("View Phone Numbers button clicked"); // Check if this logs
     const token = localStorage.getItem('token');
-    fetch('https://shift-grab.vercel.app/api/getPhoneNumbers', {
+    fetch('https://shift-grab.vercel.app/getPhoneNumbers', {
         headers: { 'Authorization': `Bearer ${token}` },
     })
     .then(response => response.json())
@@ -149,7 +149,7 @@ function displayPhoneNumbers(phoneNumbers) {
 
 async function deletePhoneNumber(number) {
     const token = localStorage.getItem('token');
-    await fetch('https://shift-grab.vercel.app/api/deletePhoneNumber', {
+    await fetch('https://shift-grab.vercel.app/deletePhoneNumber', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ number }),
@@ -168,7 +168,7 @@ async function saveNewPhoneNumber() {
     const category = document.getElementById('new-phone-category').value;
 
     const token = localStorage.getItem('token');
-    await fetch('https://shift-grab.vercel.app/api/addPhoneNumber', {
+    await fetch('https://shift-grab.vercel.app/addPhoneNumber', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, number, category }),
