@@ -2,21 +2,19 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const cors = require('cors');  // Only declare this once
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const axios = require('axios');
+require('dotenv').config();
 
-// Create Express app
 const app = express();
 
-// Middleware
 app.use(express.json());
-app.use(cors({
-  origin: 'https://shift-grab-git-main-jennyyjs-projects.vercel.app'  // Allow specific frontend URL
-}));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from /public
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors()); // This will allow all origins
+app.options('*', cors()); // Handle preflight requests
 
 // JWT Secret Key
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
@@ -42,6 +40,10 @@ const Job = mongoose.model('Job', new mongoose.Schema({
     claimedBy: { type: String },
     claimedAt: { type: Date }
 }));
+
+// Connect to Server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Connect to MongoDB and start the server
 mongoose.connect(uri)
@@ -70,19 +72,19 @@ function authenticateToken(req, res, next) {
 }
 
 // Serve HTML Pages from the Public Directory
-app.get('/api/login', (req, res) => {
+app.get('https://shift-grab.vercel.app/api/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-app.get('/api/register', (req, res) => {
+app.get('https://shift-grab.vercel.app/api/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
 
-app.get('/api/post-job', (req, res) => {
+app.get('https://shift-grab.vercel.app/api/post-job', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'post-job.html'));
 });
 
-app.get('/api/claimShift', (req, res) => {
+app.get('https://shift-grab.vercel.app/api/claimShift', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'claimShift.html'));
 });
 
@@ -115,7 +117,7 @@ async function sendTextBeltSMS(phoneNumber, message) {
 }
 
 // API Routes
-app.post('/api/register', async (req, res) => {
+app.post('https://shift-grab.vercel.app/api/register', async (req, res) => {
     const { username, password, phoneNumbers } = req.body;
 
     try {
@@ -132,7 +134,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('https://shift-grab.vercel.app/api/login', async (req, res) => {
     const { username, password } = req.body;
 
     try {
@@ -148,7 +150,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-app.post('/api/postJob', authenticateToken, async (req, res) => {
+app.post('https://shift-grab.vercel.app/api/postJob', authenticateToken, async (req, res) => {
     const { businessName, jobDescription, datetime, category } = req.body;
 
     try {
@@ -191,7 +193,7 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/api/getJobs', authenticateToken, async (req, res) => {
+app.get('https://shift-grab.vercel.app/api/getJobs', authenticateToken, async (req, res) => {
     try {
         const jobs = await Job.find({ user: req.user._id });
         res.status(200).json(jobs);
@@ -200,12 +202,12 @@ app.get('/api/getJobs', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/api/getPhoneNumbers', authenticateToken, async (req, res) => {
+app.get('https://shift-grab.vercel.app/api/getPhoneNumbers', authenticateToken, async (req, res) => {
     const user = await User.findOne({ username: req.user.username });
     res.json(user.phoneNumbers);
 });
 
-app.post('/api/addPhoneNumber', authenticateToken, async (req, res) => {
+app.post('https://shift-grab.vercel.app/api/addPhoneNumber', authenticateToken, async (req, res) => {
     const { name, number, category } = req.body;
     const user = await User.findOne({ username: req.user.username });
 
@@ -214,7 +216,7 @@ app.post('/api/addPhoneNumber', authenticateToken, async (req, res) => {
     res.json({ phoneNumbers: user.phoneNumbers });
 });
 
-app.post('/api/deletePhoneNumber', authenticateToken, async (req, res) => {
+app.post('https://shift-grab.vercel.app/api/deletePhoneNumber', authenticateToken, async (req, res) => {
     const { number } = req.body;
     const user = await User.findOne({ username: req.user.username });
 
@@ -223,7 +225,7 @@ app.post('/api/deletePhoneNumber', authenticateToken, async (req, res) => {
     res.json({ phoneNumbers: user.phoneNumbers });
 });
 
-app.get('/api/health', (req, res) => {
+app.get('https://shift-grab.vercel.app/api/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
@@ -236,7 +238,7 @@ app.use((req, res, next) => {
 });
 
 // Claim Shift Route
-app.post('/api/claimShift', async (req, res) => {
+app.post('https://shift-grab.vercel.app/api/claimShift', async (req, res) => {
     const { shiftId, workerName } = req.body;
 
     try {
@@ -278,9 +280,6 @@ app.post('/api/claimShift', async (req, res) => {
         res.status(500).json({ message: 'Error claiming shift. Please try again.' });
     }
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Function to send push notifications
 function sendPushNotification(username, message) {
