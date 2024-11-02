@@ -42,7 +42,7 @@
                 claimBtn.disabled = true;
                 claimBtn.textContent = 'Claiming...';
 
-                const response = await fetch('https://shift-grab.vercel.app/claimShift', {
+                const response = await fetch('https://shift-grab.vercel.app/api/claimShift', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
