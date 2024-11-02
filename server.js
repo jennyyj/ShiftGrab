@@ -146,7 +146,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-app.post('/postJob', authenticateToken, async (req, res) => {
+app.post('/api/postJob', authenticateToken, async (req, res) => {
     const { businessName, jobDescription, datetime, category } = req.body;
 
     try {
@@ -185,7 +185,7 @@ app.post('/postJob', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/getJobs', authenticateToken, async (req, res) => {
+app.get('/api/getJobs', authenticateToken, async (req, res) => {
     try {
         const jobs = await Job.find({ user: req.user._id });
         res.status(200).json(jobs);
@@ -194,12 +194,12 @@ app.get('/getJobs', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/getPhoneNumbers', authenticateToken, async (req, res) => {
+app.get('/api/getPhoneNumbers', authenticateToken, async (req, res) => {
     const user = await User.findOne({ username: req.user.username });
     res.json(user.phoneNumbers);
 });
 
-app.post('/addPhoneNumber', authenticateToken, async (req, res) => {
+app.post('/api/addPhoneNumber', authenticateToken, async (req, res) => {
     const { name, number, category } = req.body;
     const user = await User.findOne({ username: req.user.username });
 
@@ -208,7 +208,7 @@ app.post('/addPhoneNumber', authenticateToken, async (req, res) => {
     res.json({ phoneNumbers: user.phoneNumbers });
 });
 
-app.post('/deletePhoneNumber', authenticateToken, async (req, res) => {
+app.post('/api/deletePhoneNumber', authenticateToken, async (req, res) => {
     const { number } = req.body;
     const user = await User.findOne({ username: req.user.username });
 
@@ -218,7 +218,7 @@ app.post('/deletePhoneNumber', authenticateToken, async (req, res) => {
 });
 
 // Claim Shift Route
-app.post('/claimShift', async (req, res) => {
+app.post('/api/claimShift', async (req, res) => {
     const { shiftId, workerName } = req.body;
 
     try {
