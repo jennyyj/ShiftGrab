@@ -174,7 +174,7 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
 
         const savedJob = await job.save();
 
-        const message = `New Shift: ${businessName} - ${jobDescription} on ${datetime}. Claim the shift: https://shiftgrab.onrender.com/claimShift?shiftId=${savedJob._id}`;
+        const message = `New Shift: ${businessName} - ${jobDescription} on ${datetime}. Claim the shift: https://shift-grab.vercel.app/claimShift?shiftId=${savedJob._id}`;
         const smsPromises = relevantNumbers.map(({ number }) => sendTextBeltSMS(number, message));
         await Promise.all(smsPromises);
 
