@@ -42,7 +42,9 @@
         }
 // Loading page 
         window.addEventListener('load', () => {
-            document.getElementById('loading-screen').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+            }, 2000); // 2000 milliseconds = 2 seconds
         });
       </script> 
 </body>
