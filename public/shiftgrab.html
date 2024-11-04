@@ -45,6 +45,10 @@
         window.addEventListener('load', () => {
             setTimeout(() => {
                 document.getElementById('loading-screen').style.display = 'none';
+                
+                // Change theme color to white after loading screen fades out
+                const themeMeta = document.querySelector("meta[name='theme-color']");
+                themeMeta.setAttribute("content", "#FFFFFF"); // Change to white
             }, 2000); // 2000 milliseconds = 2 seconds
         });
       </script> 
