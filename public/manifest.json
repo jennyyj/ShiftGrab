@@ -1,10 +1,10 @@
 {
-    "name": "Shift Grab",
+    "name": "ShiftGrab",
     "short_name": "ShiftGrab",
-    "start_url": "./shiftgrab.html",
+    "start_url": "https://shift-grab.vercel.app/",
     "display": "standalone",
     "background_color": "#000000",
-    "theme_color": "#ffffff",
+    "theme_color": "#000000",
     "icons": [
       {
         "src": "/public/icons/C.PNG",
@@ -12,11 +12,10 @@
         "type": "image/png"
       },
       {
-        "src": "/public/icons/medium.PNG",
+        "src": "/public/icons/small.PNG",
         "sizes": "512x512",
         "type": "image/png"
       }
     ]
   }
   
-
