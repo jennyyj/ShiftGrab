@@ -445,8 +445,8 @@ h1.post-shift-heading {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 150vw;
+    height: 150vh;
     background-color: black;
     display: flex;
     justify-content: center;
@@ -456,6 +456,6 @@ h1.post-shift-heading {
 
 /* Centered blue hands icon */
 .loading-icon {
-    width: 100px; /* Adjust size as needed */
+    width: 150px; /* Adjust size as needed */
     height: auto;
 }
