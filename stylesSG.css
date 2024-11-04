@@ -425,3 +425,17 @@ h1.post-shift-heading {
 #claim-btn:hover {
     background-color: #e0f0ff; 
 }
+
+/* Ensure claim status messages are in dark blue */
+#claim-status {
+    color: #3a73c1; /* Dark blue color */
+    font-size: 16px;
+    text-align: center;
+    margin-top: 15px;
+}
+
+/* Ensure dynamic text is centered and consistent */
+#claim-status strong {
+    color: #3a73c1; /* Dark blue */
+    font-weight: bold;
+}
