@@ -12,7 +12,10 @@
     <div id="loading-screen">
     <img src="./icons/big.PNG" alt="Loading Icon" class="loading-icon">
 </div>
-
+    // Loading page 
+window.addEventListener('load', () => {
+    document.getElementById('loading-screen').style.display = 'none';
+});
     <div class="landing-page">
         <h1><span class="shift">SHIFT</span> <span class="grab">GRAB</span></h1>
         <p class="tagline">CONNECTING BUSINESSES TO WORKERS INSTANTLY</p>
@@ -41,10 +44,6 @@
               .catch((error) => console.error('Service Worker registration failed:', error));
           });
         }
-
-        window.addEventListener('load', () => {
-    document.getElementById('loading-screen').style.display = 'none';
-});
       </script>
       
 </body>
