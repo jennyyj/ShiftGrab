@@ -11,11 +11,6 @@ flatpickr(datetimeInput, {
     time_24hr: false,
 });
 
-// Loading page 
-window.addEventListener('load', () => {
-    document.getElementById('loading-screen').style.display = 'none';
-});
-
 // Add event listeners for form submission
 postJobForm.addEventListener("submit", handleJobPost);
 
