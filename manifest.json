@@ -12,6 +12,11 @@
         "type": "image/png"
       },
       {
+        "src": "/public/icons/C.PNG",
+        "sizes": "256x256",
+        "type": "image/png"
+      },
+      {
         "src": "/public/icons/small.PNG",
         "sizes": "512x512",
         "type": "image/png"
