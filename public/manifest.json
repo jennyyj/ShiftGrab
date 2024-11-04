@@ -4,7 +4,7 @@
     "start_url": "https://shift-grab.vercel.app/",
     "display": "standalone",
     "background_color": "#000000",
-    "theme_color": "#000000",
+    "theme_color": "#ffffff",
     "icons": [
       {
         "src": "/public/icons/C.PNG",
