@@ -439,3 +439,23 @@ h1.post-shift-heading {
     color: #3a73c1; /* Dark blue */
     font-weight: bold;
 }
+
+/* Full-screen black background */
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Ensure it appears on top */
+}
+
+/* Centered blue hands icon */
+.loading-icon {
+    width: 100px; /* Adjust size as needed */
+    height: auto;
+}
