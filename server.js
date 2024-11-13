@@ -225,6 +225,21 @@ app.post('/api/deletePhoneNumber', authenticateToken, async (req, res) => {
     res.json({ phoneNumbers: user.phoneNumbers });
 });
 
+app.get('/api/getUserInfo', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.user.username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ 
+            username: user.username,
+            // Add any other user info you want to send
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching user info', error });
+    }
+});
+
 // Claim Shift Route
 app.post('/api/claimShift', async (req, res) => {
     const { shiftId, workerName } = req.body;
