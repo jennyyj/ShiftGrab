@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post Shift</title>
+    <title>Shift Status</title>
     <link rel="stylesheet" href="stylesSG.css">
     <link rel="icon" href="sg.ico" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 </head>
 <body>
@@ -53,41 +51,11 @@
     
     <div class="overlay" id="overlay" onclick="toggleNav()"></div>
     <div class="container mx-auto px-4 py-8" style="padding-top: 60px;">
+    </div>
+</div>
 
-    <div class="container">
-        <h1 class="post-shift-heading">POST A SHIFT</h1>
-        <form id="post-job-form">
-            <input type="text" id="job-post-input" placeholder="Enter Business Name" required>
-            <input type="text" id="datetime-input" placeholder="Select Date and Time" required>
-            <select id="category-select" required>
-                <option value="" disabled selected>Select Category</option>
-                <option value="kitchen">Kitchen</option>
-                <option value="bar">Bar</option>
-                <option value="server">Server</option>
-                <option value="cleaning">Cleaning</option>
-                <option value="security">Security</option>
-                <option value="management">Management</option>
-                <option value="everyone">Everyone</option>
-            </select>
-            <textarea id="job-description" placeholder="Enter Job Description" required></textarea>
-
-            <button type="submit" class="login">
-                <span>POST SHIFT</span>
-                <span class="icon">➜</span>
-            </button>
-    
-        </form>
-        <script>
-            if ('serviceWorker' in navigator) {
-              window.addEventListener('load', () => {
-                navigator.serviceWorker
-                  .register('./service-worker.js')
-                  .then(() => console.log('Service Worker registered'))
-                  .catch((error) => console.error('Service Worker registration failed:', error));
-              });
-            }
-
-            function toggleNav() {
+<script>
+     function toggleNav() {
             const drawer = document.getElementById('navDrawer');
             const overlay = document.getElementById('overlay');
             

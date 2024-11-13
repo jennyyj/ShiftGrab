@@ -176,3 +176,18 @@ async function saveNewPhoneNumber() {
     document.getElementById('add-phone-form').style.display = 'none';
     viewPhoneNumbers();
 }
+
+// Add navigation toggle function if not already defined in HTML
+function toggleNav() {
+    const drawer = document.getElementById('navDrawer');
+    const overlay = document.getElementById('overlay');
+    
+    if (drawer.classList.contains('open')) {
+        drawer.classList.remove('open');
+        overlay.classList.remove('show');
+    } else {
+        drawer.classList.add('open');
+        overlay.classList.add('show');
+    }
+}
+  

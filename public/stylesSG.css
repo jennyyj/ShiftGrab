@@ -464,3 +464,70 @@ h1.post-shift-heading {
     display: block;
     margin: 0 auto;
 }
+
+
+/* Side bar info */
+.nav-drawer {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 250px;
+    height: 100%;
+    background-color: white;
+    transition: left 0.3s ease-in-out;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.nav-drawer.open {
+    left: 0;
+}
+
+.hamburger-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    background: none;
+    color:#3a73c1;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+}
+
+/* Remove hover effect specifically for the hamburger button */
+.hamburger-btn:hover {
+    background-color: transparent; /* Remove background color on hover */
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+.overlay.show {
+    display: block;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #3a73c1;
+    transition: background-color 0.2s;
+}
+
+.nav-item:hover {
+    background-color: #f0f8ff;
+}
+
+.nav-item svg {
+    margin-right: 10px;
+}
