@@ -25,7 +25,7 @@ async function fetchUserInfo() {
     try {
         console.log('Fetching user info...'); // Debug log
         const response = await fetch('https://shift-grab.vercel.app/api/getUserInfo', {
-            method: 'GET', // Explicitly specify method
+            method: 'GET', 
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -76,37 +76,29 @@ async function handleJobPost(e) {
         return;
     }
 
-    const shiftSelectorRoot = document.getElementById('shift-selector-root');
-    const shiftSelector = shiftSelectorRoot._reactRootContainer._internalRoot.current;
-    const selectedOption = shiftSelector.memoizedProps.value;
-    const shiftTimes = shiftSelector.memoizedState;
-
     let shiftData;
-    if (selectedOption === 'custom') {
+    if (window.selectedShiftOption === 'custom') {
+        const { startDate, startTime, endTime } = window.customShiftTimes;
         shiftData = {
             type: 'custom',
-            date: shiftTimes.customTimes.startDate,
-            startTime: shiftTimes.customTimes.startTime,
-            endTime: shiftTimes.customTimes.endTime
+            date: startDate,
+            startTime,
+            endTime
         };
     } else {
         shiftData = {
-            type: selectedOption,
-            ...shiftTimes.presetShifts[selectedOption]
+            type: window.selectedShiftOption,
+            startTime: '06:00', // Replace with appropriate values
+            endTime: '14:00'    // Replace with appropriate values
         };
     }
 
     const job = {
-        businessName: document.getElementById('business-name').value.trim(),
+        businessName: document.getElementById('business-name')?.value.trim(),
         jobDescription: jobDescription.value.trim(),
-        category: document.getElementById("category-select").value.trim(),
+        category,
         shift: shiftData
     };
-
-    if (!job.businessName || !job.jobDescription || !job.shift || !job.category) {
-        alert("All fields are required, including the category.");
-        return;
-    }
 
     try {
         const response = await fetch('https://shift-grab.vercel.app/api/postJob', {
@@ -121,7 +113,6 @@ async function handleJobPost(e) {
         const result = await response.json();
         if (response.ok) {
             alert("Job posted successfully!");
-            fetchJobs();
             resetForm();
         } else {
             alert(result.message || "Error posting job.");
