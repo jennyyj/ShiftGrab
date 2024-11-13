@@ -14,6 +14,40 @@ flatpickr(datetimeInput, {
 // Add event listeners for form submission
 postJobForm.addEventListener("submit", handleJobPost);
 
+// Get business name from registration/login
+async function fetchUserInfo() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    try {
+        const response = await fetch('https://shift-grab.vercel.app/api/getUserInfo', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch user info');
+        }
+
+        const userData = await response.json();
+        // Set the business name input value
+        document.getElementById('business-name').value = userData.username;
+        return userData;
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        alert('Error loading user information. Please try logging in again.');
+        window.location.href = 'login.html';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchUserInfo();
+});
+
 // Handle job posting
 async function handleJobPost(e) {
     e.preventDefault();
@@ -33,7 +67,7 @@ async function handleJobPost(e) {
 
 
     const job = {
-        businessName: input.value.trim(),
+        businessName: document.getElementById('business-name').value.trim(),
         jobDescription: jobDescription.value.trim(),
         datetime: datetimeInput.value.trim(),
         category: document.getElementById("category-select").value.trim(),
@@ -70,7 +104,6 @@ async function handleJobPost(e) {
 
 // Reset form fields
 function resetForm() {
-    input.value = "";
     jobDescription.value = "";
     datetimeInput.value = "";
     document.getElementById("category-select").value = "";

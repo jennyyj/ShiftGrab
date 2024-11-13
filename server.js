@@ -267,4 +267,19 @@ function sendPushNotification(username, message) {
     console.log(`Push notification sent to ${username}: ${message}`);
 }
 
+// Function to get the username as header on post job page 
 
+app.get('/api/getUserInfo', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.user.username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ 
+            username: user.username,
+            // Add any other user info you want to send
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching user info', error });
+    }
+});
