@@ -72,19 +72,19 @@ function authenticateToken(req, res, next) {
 }
 
 // Serve HTML Pages from the Public Directory
-app.get('login', (req, res) => {
+app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-app.get('register', (req, res) => {
+app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
 
-app.get('post-job', (req, res) => {
+app.get('/post-job', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'post-job.html'));
 });
 
-app.get('claimShift', (req, res) => {
+app.get('/claimShift', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'claimShift.html'));
 });
 

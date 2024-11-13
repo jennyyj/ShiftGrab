@@ -23,31 +23,42 @@ async function fetchUserInfo() {
     }
 
     try {
+        console.log('Fetching user info...'); // Debug log
         const response = await fetch('https://shift-grab.vercel.app/api/getUserInfo', {
+            method: 'GET', // Explicitly specify method
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
         });
 
         if (!response.ok) {
-            throw new Error('Failed to fetch user info');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const userData = await response.json();
-        // Set the business name input value
-        document.getElementById('business-name').value = userData.username;
+        console.log('User data received:', userData); // Debug log
+
+        const businessNameInput = document.getElementById('business-name');
+        if (businessNameInput) {
+            businessNameInput.value = userData.username;
+        } else {
+            console.error('Business name input element not found');
+        }
+        
         return userData;
     } catch (error) {
         console.error('Error fetching user info:', error);
-        alert('Error loading user information. Please try logging in again.');
-        window.location.href = 'login.html';
+        // Don't redirect immediately on error, just log it
+        return null;
     }
 }
 
+// Add this to ensure the function runs after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, fetching user info...'); // Debug log
     fetchUserInfo();
 });
-
 // Handle job posting
 async function handleJobPost(e) {
     e.preventDefault();
