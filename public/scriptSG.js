@@ -14,40 +14,6 @@ flatpickr(datetimeInput, {
 // Add event listeners for form submission
 postJobForm.addEventListener("submit", handleJobPost);
 
-// Get business name from registration/login
-async function fetchUserInfo() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    try {
-        const response = await fetch('https://shift-grab.vercel.app/api/getUserInfo', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch user info');
-        }
-
-        const userData = await response.json();
-        // Set the business name input value
-        document.getElementById('business-name').value = userData.username;
-        return userData;
-    } catch (error) {
-        console.error('Error fetching user info:', error);
-        alert('Error loading user information. Please try logging in again.');
-        window.location.href = 'login.html';
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    fetchUserInfo();
-});
-
 // Handle job posting
 async function handleJobPost(e) {
     e.preventDefault();
@@ -63,17 +29,36 @@ async function handleJobPost(e) {
     if (!category) {
         alert("Please select a category.");
         return;
-}
+    }
 
+    const shiftSelectorRoot = document.getElementById('shift-selector-root');
+    const shiftSelector = shiftSelectorRoot._reactRootContainer._internalRoot.current;
+    const selectedOption = shiftSelector.memoizedProps.value;
+    const shiftTimes = shiftSelector.memoizedState;
+
+    let shiftData;
+    if (selectedOption === 'custom') {
+        shiftData = {
+            type: 'custom',
+            date: shiftTimes.customTimes.startDate,
+            startTime: shiftTimes.customTimes.startTime,
+            endTime: shiftTimes.customTimes.endTime
+        };
+    } else {
+        shiftData = {
+            type: selectedOption,
+            ...shiftTimes.presetShifts[selectedOption]
+        };
+    }
 
     const job = {
-        businessName: document.getElementById('business-name').value.trim(),
+        businessName: input.value.trim(),
         jobDescription: jobDescription.value.trim(),
-        datetime: datetimeInput.value.trim(),
         category: document.getElementById("category-select").value.trim(),
+        shift: shiftData
     };
 
-    if (!job.businessName || !job.jobDescription || !job.datetime || !job.category) {
+    if (!job.businessName || !job.jobDescription || !job.shift || !job.category) {
         alert("All fields are required, including the category.");
         return;
     }
@@ -105,8 +90,10 @@ async function handleJobPost(e) {
 // Reset form fields
 function resetForm() {
     jobDescription.value = "";
-    datetimeInput.value = "";
     document.getElementById("category-select").value = "";
+    const shiftSelectorRoot = document.getElementById('shift-selector-root');
+    const shiftSelector = shiftSelectorRoot._reactRootContainer._internalRoot.current;
+    shiftSelector.memoizedProps.onChange({ target: { value: '' } });
 }
 
 // Fetch and display jobs
@@ -209,6 +196,10 @@ async function saveNewPhoneNumber() {
     document.getElementById('add-phone-form').style.display = 'none';
     viewPhoneNumbers();
 }
+
+// Make viewPhoneNumbers available globally
+window.viewPhoneNumbers = viewPhoneNumbers;
+window.toggleNav = toggleNav;
 
 // Add navigation toggle function if not already defined in HTML
 function toggleNav() {

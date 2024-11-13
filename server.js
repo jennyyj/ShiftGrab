@@ -33,9 +33,13 @@ const User = mongoose.model('User', new mongoose.Schema({
 const Job = mongoose.model('Job', new mongoose.Schema({
     businessName: { type: String, required: true },
     jobDescription: { type: String, required: true },
-    datetime: { type: Date, required: true },
     category: { type: String, required: true },
-    fileUrl: String,
+    shift: {
+        type: { type: String, enum: ['morning', 'midday', 'night', 'custom'], required: true },
+        date: { type: Date }, // Required only for custom shifts
+        startTime: { type: String, required: true },
+        endTime: { type: String, required: true }
+    },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     claimedBy: { type: String },
     claimedAt: { type: Date }
@@ -147,7 +151,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.post('/api/postJob', authenticateToken, async (req, res) => {
-    const { businessName, jobDescription, datetime, category } = req.body;
+    const { businessName, jobDescription, shift, category } = req.body;
 
     try {
         const user = await User.findOne({ username: req.user.username });
@@ -167,14 +171,18 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
         const job = new Job({
             businessName,
             jobDescription,
-            datetime,
+            shift,
             category,
             user: user._id,
         });
 
         const savedJob = await job.save();
 
-        const message = `New Shift: ${businessName} - ${jobDescription} on ${datetime}. Claim the shift: https://shift-grab.vercel.app/claimShift.html?shiftId=${savedJob._id}`;
+        const shiftTime = shift.type === 'custom'
+            ? `on ${new Date(shift.date).toLocaleDateString()} from ${shift.startTime} to ${shift.endTime}`
+            : `${shift.type} shift (${shift.startTime} - ${shift.endTime})`;
+
+        const message = `New Shift: ${businessName} - ${jobDescription} on ${shiftTime}. Claim the shift: https://shift-grab.vercel.app/claimShift.html?shiftId=${savedJob._id}`;
         const smsPromises = relevantNumbers.map(({ number }) => sendTextBeltSMS(number, message));
         await Promise.all(smsPromises);
 
@@ -267,19 +275,4 @@ function sendPushNotification(username, message) {
     console.log(`Push notification sent to ${username}: ${message}`);
 }
 
-// Function to get the username as header on post job page 
 
-app.get('/api/getUserInfo', authenticateToken, async (req, res) => {
-    try {
-        const user = await User.findOne({ username: req.user.username });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.status(200).json({ 
-            username: user.username,
-            // Add any other user info you want to send
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching user info', error });
-    }
-});
