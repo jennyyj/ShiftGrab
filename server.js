@@ -160,6 +160,12 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'No phone numbers found for this user.' });
         }
 
+         // Check if shift data is complete
+         if (!shift || !shift.type || !shift.startTime || !shift.endTime) {
+            console.error('Error: Incomplete shift data:', shift);
+            return res.status(400).json({ message: 'Incomplete shift data. Ensure all shift fields are provided.' });
+        }
+
         const relevantNumbers = category === 'everyone'
             ? user.phoneNumbers
             : user.phoneNumbers.filter(pn => pn.category === category);

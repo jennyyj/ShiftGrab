@@ -78,19 +78,20 @@ async function handleJobPost(e) {
 
     let shiftData;
     if (window.selectedShiftOption === 'custom') {
-        const { startDate, startTime, endTime } = window.customShiftTimes;
-        shiftData = {
-            type: 'custom',
-            date: startDate,
-            startTime,
-            endTime
-        };
-    } else {
+        const { startDate, startTime, endTime } = window.customShiftTimes || {};
+        if (!startDate || !startTime || !endTime) {
+            alert("Please complete the custom shift details.");
+            return;
+        }
+    } else if (window.selectedShiftOption) {
         shiftData = {
             type: window.selectedShiftOption,
-            startTime: '06:00', // Replace with appropriate values
-            endTime: '14:00'    // Replace with appropriate values
+            startTime: '06:00', 
+            endTime: '14:00'    
         };
+    } else {
+        alert("Please select a shift type.");
+        return;
     }
 
     const job = {
