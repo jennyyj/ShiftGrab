@@ -239,13 +239,12 @@ app.get('/api/getUserInfo', authenticateToken, async (req, res) => {
         }
         res.status(200).json({ 
             username: user.username,
-            preferences: user.preferences || {}  // Include preferences in the response
+            // Add any other user info you want to send
         });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching user info', error });
     }
 });
-
 
 // Claim Shift Route
 app.post('/api/claimShift', async (req, res) => {
@@ -351,30 +350,6 @@ app.get('/api/getCategories', authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/api/removeCategory', authenticateToken, async (req, res) => {
-    const { categoryName } = req.body;
-
-    try {
-        const user = await User.findOne({ username: req.user.username });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        if (!user.categories || !user.categories.includes(categoryName)) {
-            return res.status(404).json({ message: 'Category not found' });
-        }
-
-        user.categories = user.categories.filter(category => category !== categoryName);
-        await user.save();
-
-        res.status(200).json({ message: 'Category removed successfully' });
-    } catch (error) {
-        console.error('Error removing category:', error);
-        res.status(500).json({ message: 'Error removing category' });
-    }
-});
-
-
 app.post('/api/updateUsernamePassword', authenticateToken, async (req, res) => {
     const { newUsername, newPassword } = req.body;
 
@@ -407,5 +382,3 @@ function sendPushNotification(username, message) {
     // Placeholder function - integrate a push notification service like Firebase later
     console.log(`Push notification sent to ${username}: ${message}`);
 }
-
-

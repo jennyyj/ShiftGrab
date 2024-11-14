@@ -76,7 +76,22 @@
     <div class="overlay" id="overlay" onclick="toggleNav()"></div>
     <div class="container mx-auto px-4 py-8" style="padding-top: 60px;">
     </div>
-</div>   
+</div>
+
+<script>
+     function toggleNav() {
+            const drawer = document.getElementById('navDrawer');
+            const overlay = document.getElementById('overlay');
+            
+            if (drawer.classList.contains('open')) {
+                drawer.classList.remove('open');
+                overlay.classList.remove('show');
+            } else {
+                drawer.classList.add('open');
+                overlay.classList.add('show');
+            }
+        }
+          </script>    
     <script src="./scriptSG.js" defer></script>
 </body>
 </html>
