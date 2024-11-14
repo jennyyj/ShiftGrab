@@ -68,7 +68,8 @@
                 >
             </div>
             <div id="shift-selector-root"></div>
-            <select id="category-select" required>
+            <input type="text" id="datetime-input" placeholder="Select Date and Time" required>
+            <select id="category-select" name ="category" required>
                 <option value="" disabled selected>Select Category</option>
                 <option value="kitchen">Kitchen</option>
                 <option value="bar">Bar</option>
@@ -78,7 +79,7 @@
                 <option value="management">Management</option>
                 <option value="everyone">Everyone</option>
             </select>
-            <textarea id="job-description" placeholder="Enter Job Description" required></textarea>
+            <textarea id="job-description" name="jobDescription" placeholder="Enter Job Description" required></textarea>
 
             <button type="submit" class="login">
                 <span>POST SHIFT</span>

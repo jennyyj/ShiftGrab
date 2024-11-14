@@ -617,3 +617,7 @@ h1.post-shift-heading {
     color: #52ace4;
     opacity: 0.7;
 }
+
+.flatpickr-calendar {
+    display: none !important;
+}

@@ -76,18 +76,25 @@ async function handleJobPost(e) {
         return;
     }
 
-    let shiftData;
+    // Set shiftData with fallback values for demo purposes
+    let shiftData = { type: '', startTime: '', endTime: '' };
     if (window.selectedShiftOption === 'custom') {
         const { startDate, startTime, endTime } = window.customShiftTimes || {};
         if (!startDate || !startTime || !endTime) {
             alert("Please complete the custom shift details.");
             return;
         }
+        shiftData = {
+            type: 'custom',
+            date: startDate,
+            startTime,
+            endTime
+        };
     } else if (window.selectedShiftOption) {
         shiftData = {
             type: window.selectedShiftOption,
-            startTime: '06:00', 
-            endTime: '14:00'    
+            startTime: '06:00', // Example start time; adjust as needed
+            endTime: '14:00'    // Example end time; adjust as needed
         };
     } else {
         alert("Please select a shift type.");
@@ -96,7 +103,7 @@ async function handleJobPost(e) {
 
     const job = {
         businessName: document.getElementById('business-name')?.value.trim(),
-        jobDescription: jobDescription.value.trim(),
+        jobDescription: document.getElementById('job-description')?.value.trim(),
         category,
         shift: shiftData
     };
@@ -123,6 +130,7 @@ async function handleJobPost(e) {
         alert("Error posting job.");
     }
 }
+
 
 // Reset form fields
 function resetForm() {
