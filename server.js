@@ -290,6 +290,93 @@ app.post('/api/claimShift', async (req, res) => {
     }
 });
 
+// Settings API's
+app.post('/api/updateUserPreferences', authenticateToken, async (req, res) => {
+    const { shiftTimes } = req.body;
+
+    try {
+        const user = await User.findOne({ username: req.user.username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Add or update the shift times in the user's preferences
+        user.preferences = user.preferences || {};
+        user.preferences.shiftTimes = shiftTimes;
+        await user.save();
+
+        res.status(200).json({ message: 'User preferences updated successfully' });
+    } catch (error) {
+        console.error('Error updating user preferences:', error);
+        res.status(500).json({ message: 'Error updating user preferences' });
+    }
+});
+
+app.post('/api/addCategory', authenticateToken, async (req, res) => {
+    const { categoryName } = req.body;
+
+    try {
+        const user = await User.findOne({ username: req.user.username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.categories = user.categories || [];
+        if (user.categories.includes(categoryName)) {
+            return res.status(400).json({ message: 'Category already exists' });
+        }
+
+        user.categories.push(categoryName);
+        await user.save();
+
+        res.status(200).json({ message: 'Category added successfully' });
+    } catch (error) {
+        console.error('Error adding category:', error);
+        res.status(500).json({ message: 'Error adding category' });
+    }
+});
+
+app.get('/api/getCategories', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.user.username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json(user.categories || []);
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        res.status(500).json({ message: 'Error fetching categories' });
+    }
+});
+
+app.post('/api/updateUsernamePassword', authenticateToken, async (req, res) => {
+    const { newUsername, newPassword } = req.body;
+
+    try {
+        const user = await User.findOne({ username: req.user.username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (newUsername) {
+            user.username = newUsername;
+        }
+
+        if (newPassword) {
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            user.password = hashedPassword;
+        }
+
+        await user.save();
+        res.status(200).json({ message: 'Credentials updated successfully' });
+    } catch (error) {
+        console.error('Error updating user credentials:', error);
+        res.status(500).json({ message: 'Error updating credentials' });
+    }
+});
+
+
 // Function to send push notifications
 function sendPushNotification(username, message) {
     // Placeholder function - integrate a push notification service like Firebase later

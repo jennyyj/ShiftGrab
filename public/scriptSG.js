@@ -257,6 +257,168 @@ async function saveNewPhoneNumber() {
     viewPhoneNumbers();
 }
 
+// Settings saving shifts
+async function saveShiftTimes() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("You must be logged in to save settings.");
+        return;
+    }
+
+    const morningStart = document.getElementById('morning-start').value;
+    const morningEnd = document.getElementById('morning-end').value;
+    const middayStart = document.getElementById('midday-start').value;
+    const middayEnd = document.getElementById('midday-end').value;
+    const nightStart = document.getElementById('night-start').value;
+    const nightEnd = document.getElementById('night-end').value;
+
+    try {
+        const response = await fetch('https://shift-grab.vercel.app/api/updateUserPreferences', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                shiftTimes: {
+                    morning: { start: morningStart, end: morningEnd },
+                    midday: { start: middayStart, end: middayEnd },
+                    night: { start: nightStart, end: nightEnd },
+                },
+            }),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert("Shift times updated successfully!");
+        } else {
+            alert(result.message || "Error saving shift times.");
+        }
+    } catch (error) {
+        console.error("Error saving shift times:", error);
+        alert("Error saving shift times.");
+    }
+}
+
+// Attach the function to the global scope for use in settings.html
+window.saveShiftTimes = saveShiftTimes;
+
+async function addCategory() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("You must be logged in to add a category.");
+        return;
+    }
+
+    const categoryName = document.getElementById('new-category-name').value.trim();
+    if (!categoryName) {
+        alert("Category name cannot be empty.");
+        return;
+    }
+
+    try {
+        const response = await fetch('https://shift-grab.vercel.app/api/addCategory', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ categoryName }),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert("Category added successfully!");
+            // Optionally, update the category list in the UI
+            loadCategories();
+        } else {
+            alert(result.message || "Error adding category.");
+        }
+    } catch (error) {
+        console.error("Error adding category:", error);
+        alert("Error adding category.");
+    }
+}
+
+// Function to load categories from the server
+async function loadCategories() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        return;
+    }
+
+    try {
+        const response = await fetch('https://shift-grab.vercel.app/api/getCategories', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const categories = await response.json();
+        const categoryList = document.getElementById('category-list');
+        categoryList.innerHTML = '';
+
+        categories.forEach(category => {
+            const listItem = document.createElement('li');
+            listItem.textContent = category.name;
+            categoryList.appendChild(listItem);
+        });
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+    }
+}
+
+// Make addCategory and loadCategories functions globally accessible
+window.addCategory = addCategory;
+document.addEventListener('DOMContentLoaded', loadCategories);
+
+async function updateUserCredentials() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("You must be logged in to update your credentials.");
+        return;
+    }
+
+    const newUsername = document.getElementById('new-username').value.trim();
+    const newPassword = document.getElementById('new-password').value.trim();
+
+    if (!newUsername && !newPassword) {
+        alert("Please enter a new username or password.");
+        return;
+    }
+
+    try {
+        const response = await fetch('https://shift-grab.vercel.app/api/updateUsernamePassword', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ newUsername, newPassword }),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert("Credentials updated successfully!");
+        } else {
+            alert(result.message || "Error updating credentials.");
+        }
+    } catch (error) {
+        console.error("Error updating credentials:", error);
+        alert("Error updating credentials.");
+    }
+}
+
+// Make the function accessible in the HTML
+window.updateUserCredentials = updateUserCredentials;
+
+
 // Make viewPhoneNumbers available globally
 window.viewPhoneNumbers = viewPhoneNumbers;
 window.toggleNav = toggleNav;
