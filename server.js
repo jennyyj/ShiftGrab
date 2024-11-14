@@ -22,28 +22,102 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 // MongoDB connection URI
 const uri = process.env.MONGODB_URI;
 
-// Mongoose Models
+// Mongoose models 
+
+
+// User Model with enhanced features
 const User = mongoose.model('User', new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    phoneNumbers: [{ name: String, number: String, category: String }],
-    jobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }]
+    settings: {
+        shiftPresets: {
+            morning: { 
+                startTime: { type: String, default: '06:00' }, 
+                endTime: { type: String, default: '14:00' }
+            },
+            midday: { 
+                startTime: { type: String, default: '14:00' }, 
+                endTime: { type: String, default: '22:00' }
+            },
+            night: { 
+                startTime: { type: String, default: '22:00' }, 
+                endTime: { type: String, default: '06:00' }
+            }
+        },
+        categories: {
+            type: [String],
+            default: ['Kitchen', 'Bar', 'Server', 'Cleaning', 'Security', 'Management', 'Everyone']
+        }
+    },
+    phoneNumbers: [{
+        name: String,
+        number: String,
+        categories: [String], // Allow multiple categories per contact
+        lastUpdated: { type: Date, default: Date.now }
+    }],
+    jobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
+    lastLogin: { type: Date, default: Date.now }
+}, {
+    timestamps: true // Adds createdAt and updatedAt fields
 }));
 
+// Job Model with enhanced features
 const Job = mongoose.model('Job', new mongoose.Schema({
     businessName: { type: String, required: true },
-    jobDescription: { type: String, required: true },
+    jobDescription: { type: String, required: false }, // Made optional
     category: { type: String, required: true },
     shift: {
         type: { type: String, enum: ['morning', 'midday', 'night', 'custom'], required: true },
-        date: { type: Date }, // Required only for custom shifts
+        date: { type: Date, required: true }, // Now required for all shifts
         startTime: { type: String, required: true },
         endTime: { type: String, required: true }
     },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    status: {
+        type: String,
+        enum: ['waiting', 'claimed', 'expired', 'removed'],
+        default: 'waiting'
+    },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     claimedBy: { type: String },
-    claimedAt: { type: Date }
+    claimedAt: { type: Date },
+    removedAt: { type: Date },
+    expiresAt: { type: Date, required: true }, // Used for auto-expiring shifts
+    notificationsSent: {
+        claimed: { type: Boolean, default: false },
+        expired: { type: Boolean, default: false }
+    }
+}, {
+    timestamps: true, // Adds createdAt and updatedAt fields
+    toJSON: { virtuals: true }, // Enables virtual properties
+    toObject: { virtuals: true }
 }));
+
+// Add virtual property for shift status
+JobSchema.virtual('isExpired').get(function() {
+    return this.expiresAt < new Date();
+});
+
+// Add middleware to auto-update status
+JobSchema.pre('save', function(next) {
+    // Set expiresAt if not set
+    if (!this.expiresAt) {
+        const shiftDate = new Date(this.shift.date);
+        const [hours, minutes] = this.shift.endTime.split(':');
+        shiftDate.setHours(parseInt(hours), parseInt(minutes));
+        this.expiresAt = shiftDate;
+    }
+    
+    // Auto-update status
+    if (this.expiresAt < new Date() && this.status === 'waiting') {
+        this.status = 'expired';
+    }
+    
+    next();
+});
+
+// Add indexes for better query performance
+JobSchema.index({ status: 1, expiresAt: 1 });
+JobSchema.index({ user: 1, createdAt: -1 });
 
 // Connect to MongoDB and start the server
 mongoose.connect(uri)
@@ -243,6 +317,70 @@ app.get('/api/getUserInfo', authenticateToken, async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching user info', error });
+    }
+});
+
+app.put('/api/settings/shift-presets', authenticateToken, async (req, res) => {
+    try {
+        const { shiftPresets } = req.body;
+        const user = await User.findOne({ username: req.user.username });
+        user.settings.shiftPresets = shiftPresets;
+        await user.save();
+        res.json({ message: 'Shift presets updated' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating shift presets' });
+    }
+});
+
+app.put('/api/settings/categories', authenticateToken, async (req, res) => {
+    try {
+        const { categories } = req.body;
+        const user = await User.findOne({ username: req.user.username });
+        user.settings.customCategories = categories;
+        await user.save();
+        res.json({ message: 'Categories updated' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating categories' });
+    }
+});
+
+// Enhanced Phone Number Management
+app.put('/api/phone-number/:id', authenticateToken, async (req, res) => {
+    try {
+        const { name, number, categories } = req.body;
+        const user = await User.findOne({ username: req.user.username });
+        const phoneNumber = user.phoneNumbers.id(req.params.id);
+        phoneNumber.set({ name, number, categories, lastUpdated: new Date() });
+        await user.save();
+        res.json({ message: 'Phone number updated' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating phone number' });
+    }
+});
+
+// Enhanced Job Management
+app.get('/api/jobs/status/:status', authenticateToken, async (req, res) => {
+    try {
+        const jobs = await Job.find({
+            user: req.user._id,
+            status: req.params.status
+        }).sort({ createdAt: -1 });
+        res.json(jobs);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching jobs' });
+    }
+});
+
+app.put('/api/jobs/:id/status', authenticateToken, async (req, res) => {
+    try {
+        const { status } = req.body;
+        const job = await Job.findById(req.params.id);
+        job.status = status;
+        if (status === 'removed') job.removedAt = new Date();
+        await job.save();
+        res.json({ message: 'Job status updated' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating job status' });
     }
 });
 

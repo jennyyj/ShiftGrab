@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,8 +13,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 </head>
+
 <body>
     <button class="hamburger-btn" onclick="toggleNav()">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -52,7 +53,7 @@
                     Shift Status
                 </a>
             </div>
-            
+
             <!-- Settings and Logout at Bottom -->
             <div class="nav-bottom">
                 <a href="settings.html" class="nav-item">
@@ -73,20 +74,61 @@
             </div>
         </div>
     </div>
+
     <script>
         function toggleNav() {
-               const drawer = document.getElementById('navDrawer');
-               const overlay = document.getElementById('overlay');
-               
-               if (drawer.classList.contains('open')) {
-                   drawer.classList.remove('open');
-                   overlay.classList.remove('show');
-               } else {
-                   drawer.classList.add('open');
-                   overlay.classList.add('show');
-               }
-           }
-             </script>    
-       <script src="./scriptSG.js" defer></script>
-   </body>
-   </html>
+            const drawer = document.getElementById('navDrawer');
+            const overlay = document.getElementById('overlay');
+
+            if (drawer.classList.contains('open')) {
+                drawer.classList.remove('open');
+                overlay.classList.remove('show');
+            } else {
+                drawer.classList.add('open');
+                overlay.classList.add('show');
+            }
+        }
+    </script>
+
+    <script>
+        // settings.html
+        const SettingsPage = () => {
+            const [activeTab, setActiveTab] = React.useState('shifts');
+            const [shiftPresets, setShiftPresets] = React.useState({
+                morning: { startTime: '06:00', endTime: '14:00' },
+                midday: { startTime: '14:00', endTime: '22:00' },
+                night: { startTime: '22:00', endTime: '06:00' }
+            });
+
+            return React.createElement('div', { className: 'settings-container' },
+                // Tab Navigation
+                React.createElement('div', { className: 'settings-tabs' },
+                    React.createElement('button', {
+                        onClick: () => setActiveTab('shifts'),
+                        className: `tab ${activeTab === 'shifts' ? 'active' : ''}`
+                    }, 'Shift Times'),
+                    React.createElement('button', {
+                        onClick: () => setActiveTab('categories'),
+                        className: `tab ${activeTab === 'categories' ? 'active' : ''}`
+                    }, 'Categories'),
+                    React.createElement('button', {
+                        onClick: () => setActiveTab('account'),
+                        className: `tab ${activeTab === 'account' ? 'active' : ''}`
+                    }, 'Account Settings')
+                ),
+
+                // Content based on active tab
+                activeTab === 'shifts' && React.createElement(ShiftSettings, {
+                    presets: shiftPresets,
+                    onUpdate: setShiftPresets
+                }),
+                activeTab === 'categories' && React.createElement(CategorySettings),
+                activeTab === 'account' && React.createElement(AccountSettings)
+            );
+        };
+    </script>
+
+    <script src="./scriptSG.js" defer></script>
+</body>
+
+</html>

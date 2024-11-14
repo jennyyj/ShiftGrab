@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,8 +13,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 </head>
+
 <body>
     <button class="hamburger-btn" onclick="toggleNav()">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -52,7 +53,7 @@
                     Shift Status
                 </a>
             </div>
-            
+
             <!-- Settings and Logout at Bottom -->
             <div class="nav-bottom">
                 <a href="settings.html" class="nav-item">
@@ -72,53 +73,54 @@
                 </a>
             </div>
         </div>
-    </div> 
-
-<div class="container">
-    <h1 class="manage-heading">Manage Your Phone Numbers</h1>
-    
-    <div class="button-group">
-        <button class="small-button" onclick="viewPhoneNumbers()">
-        <span>VIEW CURRENT</span>
-    </button>
-
-    <button class="small-button" onclick="addPhoneForm()">
-        <span>+ ADD NEW</span>
-    </button>
-    </div>
     </div>
 
-    <ul id="phone-list"></ul>
+    <div class="container">
+        <h1 class="manage-heading">Manage Your Phone Numbers</h1>
 
-    <div id="add-phone-form" style="display:none;">
-        <input type="text" id="new-phone-name" placeholder="Enter Name" required>
-        <input type="text" id="new-phone-number" placeholder="Enter Phone Number" required>
-        <select id="new-phone-category" required>
-            <option value="" disabled selected>Select Category</option>
-            <option value="kitchen">Kitchen</option>
-            <option value="bar">Bar</option>
-            <option value="server">Server</option>
-            <option value="cleaning">Cleaning</option>
-            <option value="security">Security</option>
-            <option value="management">Management</option>
-            <option value="everyone">Everyone</option>
-        </select>
-        <button class="login" onclick="saveNewPhoneNumber()">Save Phone Number</button>
+        <div class="button-group">
+            <button class="small-button" onclick="viewPhoneNumbers()">
+                <span>VIEW CURRENT</span>
+            </button>
+
+            <button class="small-button" onclick="addPhoneForm()">
+                <span>+ ADD NEW</span>
+            </button>
+        </div>
+
+        <ul id="phone-list"></ul>
+
+        <div id="add-phone-form" style="display:none;">
+            <input type="text" id="new-phone-name" placeholder="Enter Name" required>
+            <input type="text" id="new-phone-number" placeholder="Enter Phone Number" required>
+            <select id="new-phone-category" required>
+                <option value="" disabled selected>Select Category</option>
+                <option value="kitchen">Kitchen</option>
+                <option value="bar">Bar</option>
+                <option value="server">Server</option>
+                <option value="cleaning">Cleaning</option>
+                <option value="security">Security</option>
+                <option value="management">Management</option>
+                <option value="everyone">Everyone</option>
+            </select>
+            <button class="login" onclick="saveNewPhoneNumber()">Save Phone Number</button>
+        </div>
     </div>
-</div>
-<script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('./service-worker.js')
-          .then(() => console.log('Service Worker registered'))
-          .catch((error) => console.error('Service Worker registration failed:', error));
-      });
-    }
-     function toggleNav() {
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker
+                    .register('./service-worker.js')
+                    .then(() => console.log('Service Worker registered'))
+                    .catch((error) => console.error('Service Worker registration failed:', error));
+            });
+        }
+
+        function toggleNav() {
             const drawer = document.getElementById('navDrawer');
             const overlay = document.getElementById('overlay');
-            
+
             if (drawer.classList.contains('open')) {
                 drawer.classList.remove('open');
                 overlay.classList.remove('show');
@@ -127,7 +129,40 @@
                 overlay.classList.add('show');
             }
         }
-          </script>    
+
+        // managePeople.html
+        const ManagePeople = () => {
+            const [view, setView] = React.useState('all');
+            const [phoneNumbers, setPhoneNumbers] = React.useState([]);
+            const [categories, setCategories] = React.useState([]);
+
+            return React.createElement('div', { className: 'manage-people-container' },
+                // Category Filter
+                React.createElement('select', {
+                    onChange: (e) => setView(e.target.value),
+                    className: 'category-filter'
+                }, [
+                    React.createElement('option', { value: 'all' }, 'All People'),
+                    ...categories.map(cat =>
+                        React.createElement('option', { value: cat }, cat)
+                    )
+                ]),
+
+                // Phone Numbers List with Multi-Category Support
+                React.createElement('div', { className: 'phone-numbers-list' },
+                    phoneNumbers
+                        .filter(phone => view === 'all' || phone.categories.includes(view))
+                        .map(phone => React.createElement(PhoneNumberCard, {
+                            phone,
+                            categories,
+                            onUpdate: handleUpdatePhone,
+                            onDelete: handleDeletePhone
+                        }))
+                )
+            );
+        };
+    </script>
     <script src="./scriptSG.js" defer></script>
 </body>
+
 </html>
