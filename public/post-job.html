@@ -110,169 +110,159 @@
             }
         }
     </script>  
-           <script>
-            const ShiftSelector = () => {
-                const [selectedOption, setSelectedOption] = React.useState('');
+    <script>
+        const ShiftSelector = () => {
+    const [selectedOption, setSelectedOption] = React.useState('');
+    const [showCustom, setShowCustom] = React.useState(false);
+    const [customTimes, setCustomTimes] = React.useState({
+        startDate: '',
+        startTime: '',
+        endTime: ''
+    });
 
-                const handleShiftChange = (e) => {
-                    const value = e.target.value;
-                    setSelectedOption(value);
-                    window.selectedShiftOption = value; // Update global variable for access in other functions
-                };
+    const handleShiftChange = (e) => {
+        const value = e.target.value;
+        setSelectedOption(value);
+        setShowCustom(value === 'custom');
+        window.selectedShiftOption = value; // Store globally for access in other functions
+    };
 
-                return React.createElement('select', {
-                    value: selectedOption,
-                    onChange: handleShiftChange,
-                    className: 'shift-select',
-                    'aria-label': 'Select shift time'
+    // Create refs for the custom date and time inputs
+    const dateInputRef = React.useRef(null);
+    const startTimeInputRef = React.useRef(null);
+    const endTimeInputRef = React.useRef(null);
+
+    // Handlers to trigger native date and time pickers
+    const handleCalendarClick = () => {
+        if (dateInputRef.current) {
+            dateInputRef.current.showPicker();
+        }
+    };
+
+    const handleClockClick = (inputRef) => {
+        if (inputRef.current) {
+            inputRef.current.showPicker();
+        }
+    };
+
+    return React.createElement('div', { className: 'space-y-4' },
+        React.createElement('select', {
+            value: selectedOption,
+            onChange: handleShiftChange,
+            className: 'shift-select',
+            'aria-label': 'Select shift time'
+        },
+            React.createElement('option', { value: '' }, 'Select shift time'),
+            React.createElement('option', { value: 'morning' }, 'Morning (6:00 AM - 2:00 PM)'),
+            React.createElement('option', { value: 'midday' }, 'Midday (2:00 PM - 10:00 PM)'),
+            React.createElement('option', { value: 'night' }, 'Night (10:00 PM - 6:00 AM)'),
+            React.createElement('option', { value: 'custom' }, 'Custom Time')
+        ),
+        showCustom && React.createElement('div', { className: 'custom-time-container' },
+            React.createElement('div', { className: 'input-container' },
+                React.createElement('button', {
+                    type: 'button',
+                    onClick: handleCalendarClick,
+                    className: 'icon-button',
+                    'aria-label': 'Open date picker'
                 },
-                    React.createElement('option', { value: '' }, 'Select shift time'),
-                    React.createElement('option', { value: 'morning' }, 'Morning (6:00 AM - 2:00 PM)'),
-                    React.createElement('option', { value: 'midday' }, 'Midday (2:00 PM - 10:00 PM)'),
-                    React.createElement('option', { value: 'night' }, 'Night (10:00 PM - 6:00 AM)'),
-                    React.createElement('option', { value: 'custom' }, 'Custom Time')
-                );
-            };
-                 // Handler functions for icon clicks
-                const handleCalendarClick = (inputRef) => {
-                    if (inputRef && inputRef.current) {
-                        inputRef.current.showPicker();
-                    }
-                };
-    
-                const handleClockClick = (inputRef) => {
-                    if (inputRef && inputRef.current) {
-                        inputRef.current.showPicker();
-                    }
-                };
-    
-                // Create refs for the inputs
-                const dateInputRef = React.useRef(null);
-                const startTimeInputRef = React.useRef(null);
-                const endTimeInputRef = React.useRef(null);
-    
-                const handleShiftChange = (e) => {
-                    const value = e.target.value;
-                    setSelectedOption(value);
-                    setShowCustom(value === 'custom');
-                };
-    
-                return React.createElement('div', { className: 'space-y-4' },
-                    React.createElement('select', {
-                        value: selectedOption,
-                        onChange: handleShiftChange,
-                        className: 'shift-select',
-                        'aria-label': 'Select shift time'
+                    React.createElement('svg', {
+                        xmlns: 'http://www.w3.org/2000/svg',
+                        width: '20',
+                        height: '20',
+                        viewBox: '0 0 24 24',
+                        fill: 'none',
+                        stroke: '#4484E3',
+                        strokeWidth: '2',
+                        strokeLinecap: 'round',
+                        strokeLinejoin: 'round'
                     },
-                        React.createElement('option', { value: '' }, 'Select shift time'),
-                        React.createElement('option', { value: 'morning' }, presetShifts.morning.label),
-                        React.createElement('option', { value: 'midday' }, presetShifts.midday.label),
-                        React.createElement('option', { value: 'night' }, presetShifts.night.label),
-                        React.createElement('option', { value: 'custom' }, 'Custom Time')
-                    ),
-                    showCustom && React.createElement('div', { className: 'custom-time-container' },
-                        React.createElement('div', { className: 'input-container' },
-                            React.createElement('button', {
-                                type: 'button',
-                                onClick: () => handleCalendarClick(dateInputRef),
-                                className: 'icon-button',
-                                'aria-label': 'Open date picker'
-                            },
-                                React.createElement('svg', {
-                                    xmlns: 'http://www.w3.org/2000/svg',
-                                    width: '20',
-                                    height: '20',
-                                    viewBox: '0 0 24 24',
-                                    fill: 'none',
-                                    stroke: '#4484E3',
-                                    strokeWidth: '2',
-                                    strokeLinecap: 'round',
-                                    strokeLinejoin: 'round'
-                                },
-                                    React.createElement('rect', { x: '3', y: '4', width: '18', height: '18', rx: '2', ry: '2' }),
-                                    React.createElement('line', { x1: '16', y1: '2', x2: '16', y2: '6' }),
-                                    React.createElement('line', { x1: '8', y1: '2', x2: '8', y2: '6' }),
-                                    React.createElement('line', { x1: '3', y1: '10', x2: '21', y2: '10' })
-                                )
-                            ),
-                            React.createElement('input', {
-                                ref: dateInputRef,
-                                type: 'date',
-                                value: customTimes.startDate,
-                                onChange: (e) => setCustomTimes({...customTimes, startDate: e.target.value}),
-                                className: 'shift-input',
-                                placeholder: 'mm/dd/yyyy'
-                            })
-                        ),
-                        React.createElement('div', { className: 'time-inputs-grid' },
-                            React.createElement('div', { className: 'input-container' },
-                                React.createElement('button', {
-                                    type: 'button',
-                                    onClick: () => handleClockClick(startTimeInputRef),
-                                    className: 'icon-button',
-                                    'aria-label': 'Open start time picker'
-                                },
-                                    React.createElement('svg', {
-                                        xmlns: 'http://www.w3.org/2000/svg',
-                                        width: '20',
-                                        height: '20',
-                                        viewBox: '0 0 24 24',
-                                        fill: 'none',
-                                        stroke: '#4484E3',
-                                        strokeWidth: '2',
-                                        strokeLinecap: 'round',
-                                        strokeLinejoin: 'round'
-                                    },
-                                        React.createElement('circle', { cx: '12', cy: '12', r: '10' }),
-                                        React.createElement('polyline', { points: '12 6 12 12 16 14' })
-                                    )
-                                ),
-                                React.createElement('input', {
-                                    ref: startTimeInputRef,
-                                    type: 'time',
-                                    value: customTimes.startTime,
-                                    onChange: (e) => setCustomTimes({...customTimes, startTime: e.target.value}),
-                                    className: 'shift-input'
-                                })
-                            ),
-                            React.createElement('div', { className: 'input-container' },
-                                React.createElement('button', {
-                                    type: 'button',
-                                    onClick: () => handleClockClick(endTimeInputRef),
-                                    className: 'icon-button',
-                                    'aria-label': 'Open end time picker'
-                                },
-                                    React.createElement('svg', {
-                                        xmlns: 'http://www.w3.org/2000/svg',
-                                        width: '20',
-                                        height: '20',
-                                        viewBox: '0 0 24 24',
-                                        fill: 'none',
-                                        stroke: '#4484E3',
-                                        strokeWidth: '2',
-                                        strokeLinecap: 'round',
-                                        strokeLinejoin: 'round'
-                                    },
-                                        React.createElement('circle', { cx: '12', cy: '12', r: '10' }),
-                                        React.createElement('polyline', { points: '12 6 12 12 16 14' })
-                                    )
-                                ),
-                                React.createElement('input', {
-                                    ref: endTimeInputRef,
-                                    type: 'time',
-                                    value: customTimes.endTime,
-                                    onChange: (e) => setCustomTimes({...customTimes, endTime: e.target.value}),
-                                    className: 'shift-input'
-                                })
-                            )
-                        )
+                        React.createElement('rect', { x: '3', y: '4', width: '18', height: '18', rx: '2', ry: '2' }),
+                        React.createElement('line', { x1: '16', y1: '2', x2: '16', y2: '6' }),
+                        React.createElement('line', { x1: '8', y1: '2', x2: '8', y2: '6' }),
+                        React.createElement('line', { x1: '3', y1: '10', x2: '21', y2: '10' })
                     )
-                );
-    
-            // Mount the component
-            const root = ReactDOM.createRoot(document.getElementById('shift-selector-root'));
-            root.render(React.createElement(ShiftSelector));
-        </script>
+                ),
+                React.createElement('input', {
+                    ref: dateInputRef,
+                    type: 'date',
+                    value: customTimes.startDate,
+                    onChange: (e) => setCustomTimes({ ...customTimes, startDate: e.target.value }),
+                    className: 'shift-input',
+                    placeholder: 'mm/dd/yyyy'
+                })
+            ),
+            React.createElement('div', { className: 'time-inputs-grid' },
+                React.createElement('div', { className: 'input-container' },
+                    React.createElement('button', {
+                        type: 'button',
+                        onClick: () => handleClockClick(startTimeInputRef),
+                        className: 'icon-button',
+                        'aria-label': 'Open start time picker'
+                    },
+                        React.createElement('svg', {
+                            xmlns: 'http://www.w3.org/2000/svg',
+                            width: '20',
+                            height: '20',
+                            viewBox: '0 0 24 24',
+                            fill: 'none',
+                            stroke: '#4484E3',
+                            strokeWidth: '2',
+                            strokeLinecap: 'round',
+                            strokeLinejoin: 'round'
+                        },
+                            React.createElement('circle', { cx: '12', cy: '12', r: '10' }),
+                            React.createElement('polyline', { points: '12 6 12 12 16 14' })
+                        )
+                    ),
+                    React.createElement('input', {
+                        ref: startTimeInputRef,
+                        type: 'time',
+                        value: customTimes.startTime,
+                        onChange: (e) => setCustomTimes({ ...customTimes, startTime: e.target.value }),
+                        className: 'shift-input'
+                    })
+                ),
+                React.createElement('div', { className: 'input-container' },
+                    React.createElement('button', {
+                        type: 'button',
+                        onClick: () => handleClockClick(endTimeInputRef),
+                        className: 'icon-button',
+                        'aria-label': 'Open end time picker'
+                    },
+                        React.createElement('svg', {
+                            xmlns: 'http://www.w3.org/2000/svg',
+                            width: '20',
+                            height: '20',
+                            viewBox: '0 0 24 24',
+                            fill: 'none',
+                            stroke: '#4484E3',
+                            strokeWidth: '2',
+                            strokeLinecap: 'round',
+                            strokeLinejoin: 'round'
+                        },
+                            React.createElement('circle', { cx: '12', cy: '12', r: '10' }),
+                            React.createElement('polyline', { points: '12 6 12 12 16 14' })
+                        )
+                    ),
+                    React.createElement('input', {
+                        ref: endTimeInputRef,
+                        type: 'time',
+                        value: customTimes.endTime,
+                        onChange: (e) => setCustomTimes({ ...customTimes, endTime: e.target.value }),
+                        className: 'shift-input'
+                    })
+                )
+            )
+        )
+    );
+};
+
+// Mount the ShiftSelector component to the root element
+const root = ReactDOM.createRoot(document.getElementById('shift-selector-root'));
+root.render(React.createElement(ShiftSelector));
+
+    </script>
     <script src="./scriptSG.js" defer></script>
 </body>
 </html>
