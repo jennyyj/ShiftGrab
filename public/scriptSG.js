@@ -102,7 +102,7 @@ async function handleJobPost(e) {
 
     const job = {
         businessName: document.getElementById('business-name')?.value.trim(),
-        jobDescription: document.getElementById('job-description')?.value.trim(),
+        jobDescription: document.getElementById('job-description')?.value.trim() || '',
         category,
         shift: shiftData
     };
