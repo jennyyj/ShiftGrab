@@ -6,6 +6,8 @@ const postShiftButton = document.querySelector("button[type='submit']");
 postJobForm.addEventListener("submit", handleJobPost);
 
 // Get business name 
+let userShiftTimes = {};
+
 async function fetchUserInfo() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -35,7 +37,11 @@ async function fetchUserInfo() {
         } else {
             console.error('Business name input element not found');
         }
-        
+
+        if (userData.preferences && userData.preferences.shiftTimes) {
+            userShiftTimes = userData.preferences.shiftTimes;
+        }
+
         if (userData.categories) {
             const categorySelect = document.getElementById('category-select');
             categorySelect.innerHTML = `

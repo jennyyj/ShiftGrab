@@ -164,6 +164,7 @@
         }
     };
 
+    // Use userShiftTimes for dynamic shift time rendering
     return React.createElement('div', { className: 'space-y-4' },
         React.createElement('select', {
             value: selectedOption,
@@ -172,9 +173,9 @@
             'aria-label': 'Select shift time'
         },
             React.createElement('option', { value: '' }, 'Select shift time'),
-            React.createElement('option', { value: 'morning' }, 'Morning (6:00 AM - 2:00 PM)'),
-            React.createElement('option', { value: 'midday' }, 'Midday (2:00 PM - 10:00 PM)'),
-            React.createElement('option', { value: 'night' }, 'Night (10:00 PM - 6:00 AM)'),
+            userShiftTimes.morning ? React.createElement('option', { value: 'morning' }, `Morning (${userShiftTimes.morning.start} - ${userShiftTimes.morning.end})`) : null,
+            userShiftTimes.midday ? React.createElement('option', { value: 'midday' }, `Midday (${userShiftTimes.midday.start} - ${userShiftTimes.midday.end})`) : null,
+            userShiftTimes.night ? React.createElement('option', { value: 'night' }, `Night (${userShiftTimes.night.start} - ${userShiftTimes.night.end})`) : null,
             React.createElement('option', { value: 'custom' }, 'Custom Time')
         ),
         showCustom && React.createElement('div', { className: 'custom-time-container' },
@@ -225,7 +226,7 @@
                             height: '20',
                             viewBox: '0 0 24 24',
                             fill: 'none',
-                            stroke: '#4484E3',
+                            stroke: '#3a73c1',
                             strokeWidth: '2',
                             strokeLinecap: 'round',
                             strokeLinejoin: 'round'
@@ -255,7 +256,7 @@
                             height: '20',
                             viewBox: '0 0 24 24',
                             fill: 'none',
-                            stroke: '#4484E3',
+                            stroke: '#3a73c1',
                             strokeWidth: '2',
                             strokeLinecap: 'round',
                             strokeLinejoin: 'round'
@@ -277,9 +278,14 @@
     );
 };
 
-// Mount the ShiftSelector component to the root element
-const root = ReactDOM.createRoot(document.getElementById('shift-selector-root'));
-root.render(React.createElement(ShiftSelector));
+// Render the ShiftSelector component
+const renderShiftSelector = () => {
+    const rootElement = document.getElementById('shift-selector-root');
+    if (rootElement) {
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(React.createElement(ShiftSelector));
+    }
+};
 
     </script>
     <script src="./scriptSG.js" defer></script>
