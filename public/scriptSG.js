@@ -1,16 +1,6 @@
-/* Updated scriptSG.js */
-// Get input elements
 const jobDescription = document.getElementById("job-description");
-const datetimeInput = document.getElementById("datetime-input");
 const postJobForm = document.getElementById("post-job-form");
 const postShiftButton = document.querySelector("button[type='submit']");
-
-// Initialize Flatpickr
-flatpickr(datetimeInput, {
-    enableTime: true,
-    dateFormat: "Y-m-d H:i",
-    time_24hr: false,
-});
 
 // Add event listeners for form submission
 postJobForm.addEventListener("submit", handleJobPost);
@@ -153,7 +143,6 @@ function resetForm() {
 // Ensure functions are attached to window
 toggleNav && (window.toggleNav = toggleNav);
 viewPhoneNumbers && (window.viewPhoneNumbers = viewPhoneNumbers);
-
 
 // Fetch and display jobs
 function fetchJobs() {
