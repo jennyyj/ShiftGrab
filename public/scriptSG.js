@@ -2,19 +2,24 @@ const jobDescription = document.getElementById("job-description");
 const postJobForm = document.getElementById("post-job-form");
 const postShiftButton = document.querySelector("button[type='submit']");
 
-// Add event listeners for form submission
-postJobForm.addEventListener("submit", handleJobPost);
-
-// Get business name 
+// User Shift Times object
 let userShiftTimes = {};
 
+// Add event listeners
+postJobForm?.addEventListener("submit", handleJobPost);
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM loaded, fetching user info...");
+    fetchUserInfo().then(renderShiftSelector);
+    loadCategories();
+});
+
+// Fetch User Info
 async function fetchUserInfo() {
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = 'login.html';
         return;
     }
-
     try {
         const response = await fetch('https://shift-grab.vercel.app/api/getUserInfo', {
             method: 'GET',
@@ -24,67 +29,145 @@ async function fetchUserInfo() {
             }
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const userData = await response.json();
         console.log('User data received:', userData);
 
-        const businessNameInput = document.getElementById('business-name');
-        if (businessNameInput) {
-            businessNameInput.value = userData.username;
-        } else {
-            console.error('Business name input element not found');
-        }
+        document.getElementById('business-name')?.value = userData.username;
+        userShiftTimes = userData.preferences?.shiftTimes || {};
 
-        if (userData.preferences && userData.preferences.shiftTimes) {
-            userShiftTimes = userData.preferences.shiftTimes;
-        }
-
-        if (userData.categories) {
-            const categorySelect = document.getElementById('category-select');
-            categorySelect.innerHTML = `
-                <option value="" disabled selected>Select Category</option>
-            `;
-            userData.categories.forEach(category => {
-                categorySelect.innerHTML += `<option value="${category}">${category}</option>`;
-            });
-        }
-
-        // Update the shift options based on preferences
-        if (userData.preferences && userData.preferences.shiftTimes) {
-            const shiftSelector = document.getElementById('shift-selector-root');
-            const { morning, midday, night } = userData.preferences.shiftTimes;
-
-            // Update morning, midday, night shift times if available
-            const optionsHtml = `
-                <option value="">Select shift time</option>
-                <option value="morning">Morning (${morning.start} - ${morning.end})</option>
-                <option value="midday">Midday (${midday.start} - ${midday.end})</option>
-                <option value="night">Night (${night.start} - ${night.end})</option>
-                <option value="custom">Custom Time</option>
-            `;
-            shiftSelector.innerHTML = optionsHtml;
-        }
+        const categorySelect = document.getElementById('category-select');
+        categorySelect.innerHTML = `<option value="" disabled selected>Select Category</option>`;
+        userData.categories?.forEach(category => {
+            categorySelect.innerHTML += `<option value="${category}">${category}</option>`;
+        });
 
         return userData;
     } catch (error) {
         console.error('Error fetching user info:', error);
-        return null;
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, fetching user info...');
-    fetchUserInfo();
-});
+// React Component: ShiftSelector
+const ShiftSelector = ({ shiftTimes }) => {
+    const [selectedOption, setSelectedOption] = React.useState('');
+    const [showCustom, setShowCustom] = React.useState(false);
+    const [customTimes, setCustomTimes] = React.useState({
+        startDate: '',
+        startTime: '',
+        endTime: ''
+    });
 
-// Handle job posting
+    const handleShiftChange = (e) => {
+        const value = e.target.value;
+        setSelectedOption(value);
+        setShowCustom(value === 'custom');
+        window.selectedShiftOption = value;
+    };
+
+    const dateInputRef = React.useRef(null);
+    const startTimeInputRef = React.useRef(null);
+    const endTimeInputRef = React.useRef(null);
+
+    const handleCalendarClick = () => dateInputRef.current?.showPicker();
+    const handleClockClick = (inputRef) => inputRef.current?.showPicker();
+
+    return React.createElement('div', { className: 'space-y-4' },
+        React.createElement('select', {
+            value: selectedOption,
+            onChange: handleShiftChange,
+            className: 'shift-select',
+            'aria-label': 'Select shift time'
+        },
+            React.createElement('option', { value: '' }, 'Select shift time'),
+            shiftTimes?.morning && React.createElement('option', { value: 'morning' }, `Morning (${shiftTimes.morning.start} - ${shiftTimes.morning.end})`),
+            shiftTimes?.midday && React.createElement('option', { value: 'midday' }, `Midday (${shiftTimes.midday.start} - ${shiftTimes.midday.end})`),
+            shiftTimes?.night && React.createElement('option', { value: 'night' }, `Night (${shiftTimes.night.start} - ${shiftTimes.night.end})`),
+            React.createElement('option', { value: 'custom' }, 'Custom Time')
+        ),
+        showCustom && React.createElement('div', { className: 'custom-time-container' },
+            React.createElement('div', { className: 'input-container' },
+                React.createElement('button', {
+                    type: 'button',
+                    onClick: handleCalendarClick,
+                    className: 'icon-button',
+                    'aria-label': 'Open date picker'
+                },
+                    React.createElement('svg', { xmlns: 'http://www.w3.org/2000/svg', width: '20', height: '20', viewBox: '0 0 24 24', fill: 'none', stroke: '#4484E3', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' },
+                        React.createElement('rect', { x: '3', y: '4', width: '18', height: '18', rx: '2', ry: '2' }),
+                        React.createElement('line', { x1: '16', y1: '2', x2: '16', y2: '6' }),
+                        React.createElement('line', { x1: '8', y1: '2', x2: '8', y2: '6' }),
+                        React.createElement('line', { x1: '3', y1: '10', x2: '21', y2: '10' })
+                    )
+                ),
+                React.createElement('input', {
+                    ref: dateInputRef,
+                    type: 'date',
+                    value: customTimes.startDate,
+                    onChange: (e) => setCustomTimes({ ...customTimes, startDate: e.target.value }),
+                    className: 'shift-input',
+                    placeholder: 'mm/dd/yyyy'
+                })
+            ),
+            React.createElement('div', { className: 'time-inputs-grid' },
+                React.createElement('div', { className: 'input-container' },
+                    React.createElement('button', {
+                        type: 'button',
+                        onClick: () => handleClockClick(startTimeInputRef),
+                        className: 'icon-button',
+                        'aria-label': 'Open start time picker'
+                    },
+                        React.createElement('svg', { xmlns: 'http://www.w3.org/2000/svg', width: '20', height: '20', viewBox: '0 0 24 24', fill: 'none', stroke: '#4484E3', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' },
+                            React.createElement('circle', { cx: '12', cy: '12', r: '10' }),
+                            React.createElement('polyline', { points: '12 6 12 12 16 14' })
+                        )
+                    ),
+                    React.createElement('input', {
+                        ref: startTimeInputRef,
+                        type: 'time',
+                        value: customTimes.startTime,
+                        onChange: (e) => setCustomTimes({ ...customTimes, startTime: e.target.value }),
+                        className: 'shift-input'
+                    })
+                ),
+                React.createElement('div', { className: 'input-container' },
+                    React.createElement('button', {
+                        type: 'button',
+                        onClick: () => handleClockClick(endTimeInputRef),
+                        className: 'icon-button',
+                        'aria-label': 'Open end time picker'
+                    },
+                        React.createElement('svg', { xmlns: 'http://www.w3.org/2000/svg', width: '20', height: '20', viewBox: '0 0 24 24', fill: 'none', stroke: '#4484E3', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' },
+                            React.createElement('circle', { cx: '12', cy: '12', r: '10' }),
+                            React.createElement('polyline', { points: '12 6 12 12 16 14' })
+                        )
+                    ),
+                    React.createElement('input', {
+                        ref: endTimeInputRef,
+                        type: 'time',
+                        value: customTimes.endTime,
+                        onChange: (e) => setCustomTimes({ ...customTimes, endTime: e.target.value }),
+                        className: 'shift-input'
+                    })
+                )
+            )
+        )
+    );
+};
+
+// Render ShiftSelector Component
+function renderShiftSelector() {
+    const rootElement = document.getElementById('shift-selector-root');
+    if (rootElement) {
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(React.createElement(ShiftSelector, { shiftTimes: userShiftTimes }));
+    }
+}
+
+// Handle Job Posting
 async function handleJobPost(e) {
     e.preventDefault();
-
-    // Disable the submit button to prevent multiple submissions
     postShiftButton.disabled = true;
 
     const token = localStorage.getItem('token');
@@ -103,27 +186,20 @@ async function handleJobPost(e) {
 
     let shiftData;
     if (window.selectedShiftOption === 'custom') {
-        const startDate = document.querySelector("input[type='date']").value;
-        const startTime = document.querySelector("input[type='time']").value;
-        const endTime = document.querySelectorAll("input[type='time']")[1].value;
+        const [startDate, startTime, endTime] = [
+            document.querySelector("input[type='date']").value,
+            document.querySelector("input[type='time']").value,
+            document.querySelectorAll("input[type='time']")[1].value
+        ];
 
         if (!startDate || !startTime || !endTime) {
             alert("Please complete the custom shift details.");
             postShiftButton.disabled = false;
             return;
         }
-        shiftData = {
-            type: 'custom',
-            date: startDate,
-            startTime,
-            endTime
-        };
+        shiftData = { type: 'custom', date: startDate, startTime, endTime };
     } else if (window.selectedShiftOption) {
-        shiftData = {
-            type: window.selectedShiftOption,
-            startTime: '06:00', // Example start time; adjust as needed
-            endTime: '14:00'    // Example end time; adjust as needed
-        };
+        shiftData = { type: window.selectedShiftOption, startTime: '06:00', endTime: '14:00' }; // Example times
     } else {
         alert("Please select a shift type.");
         postShiftButton.disabled = false;
@@ -132,7 +208,7 @@ async function handleJobPost(e) {
 
     const job = {
         businessName: document.getElementById('business-name')?.value.trim(),
-        jobDescription: document.getElementById('job-description')?.value.trim() || '',
+        jobDescription: jobDescription?.value.trim() || '',
         category,
         shift: shiftData
     };
@@ -146,8 +222,8 @@ async function handleJobPost(e) {
             },
             body: JSON.stringify(job),
         });
-        
         const result = await response.json();
+
         if (response.ok) {
             alert("Job posted successfully!");
             resetForm();
@@ -162,220 +238,37 @@ async function handleJobPost(e) {
     }
 }
 
-// Reset form fields
+// Reset Form Fields
 function resetForm() {
     jobDescription.value = "";
     document.getElementById("category-select").value = "";
     const shiftSelectorRoot = document.getElementById('shift-selector-root');
     const shiftSelector = shiftSelectorRoot?._reactRootContainer?._internalRoot?.current;
-    if (shiftSelector && shiftSelector.memoizedProps?.onChange) {
-        shiftSelector.memoizedProps.onChange({ target: { value: '' } });
-    }
+    shiftSelector?.memoizedProps?.onChange({ target: { value: '' } });
 }
 
-// Log out Function 
+// Utility Functions
 function handleLogout() {
     localStorage.removeItem('token');
     window.location.href = 'login.html';
 }
 
-// Add to global scope
+function toggleNav() {
+    const drawer = document.getElementById('navDrawer');
+    const overlay = document.getElementById('overlay');
+    drawer.classList.toggle('open');
+    overlay.classList.toggle('show');
+}
+
+// Attach Functions to Window for Global Use
 window.handleLogout = handleLogout;
+window.toggleNav = toggleNav;
+window.renderShiftSelector = renderShiftSelector;
 
-// Ensure functions are attached to window
-toggleNav && (window.toggleNav = toggleNav);
-viewPhoneNumbers && (window.viewPhoneNumbers = viewPhoneNumbers);
-
-// Fetch and display jobs
-function fetchJobs() {
-    const token = localStorage.getItem('token');
-    fetch('https://shift-grab.vercel.app/getJobs', {
-        headers: { 'Authorization': `Bearer ${token}` },
-    })
-        .then((response) => response.json())
-        .then((jobs) => renderJobList(jobs))
-        .catch((error) => console.error('Error fetching jobs:', error));
-}
-
-// Render job list
-function renderJobList(jobs) {
-    const list = document.getElementById("job-list");
-    list.innerHTML = "";
-    jobs.forEach((job) => {
-        const listItem = document.createElement("li");
-        listItem.innerHTML = `
-            <strong>${job.businessName}</strong>
-            <p>${job.jobDescription}</p>
-            <p>${job.datetime}</p>
-        `;
-        list.appendChild(listItem);
-    });
-}
-
-function toggleDropdown() {
-    const dropdown = document.getElementById('phone-dropdown');
-    console.log("Dropdown toggled"); // Check if the function is called
-
-    // Use inline style to toggle the display
-    if (dropdown.style.display === 'block') {
-        dropdown.style.display = 'none';
-    } else {
-        dropdown.style.display = 'block';
-    }
-}
-
-function viewPhoneNumbers() {
-    console.log("View Phone Numbers button clicked"); // Check if this logs
-    const token = localStorage.getItem('token');
-    fetch('https://shift-grab.vercel.app/api/getPhoneNumbers', {
-        headers: { 'Authorization': `Bearer ${token}` },
-    })
-    .then(response => response.json())
-    .then(phoneNumbers => displayPhoneNumbers(phoneNumbers))
-    .catch(error => console.error("Error fetching phone numbers:", error));
-}
-
-function displayPhoneNumbers(phoneNumbers) {
-    const list = document.getElementById('phone-list');
-    list.innerHTML = '';
-    phoneNumbers.forEach(({ name, number, category }) => {
-        const li = document.createElement('li');
-        li.className = 'phone-item'; 
-        const span = document.createElement('span');
-        span.className = 'phone-info';
-        span.innerHTML = `<strong>${name}</strong>: ${number} (${category})`;
-
-        const deleteButton = document.createElement('button');
-        deleteButton.className = 'delete-button';
-        deleteButton.textContent = 'Delete';
-        deleteButton.onclick = () => deletePhoneNumber(number);
-
-        // Use Flexbox to align the text and button
-        li.appendChild(span);
-        li.appendChild(deleteButton);
-        list.appendChild(li);
-    });
-}
-
-async function deletePhoneNumber(number) {
-    const token = localStorage.getItem('token');
-    await fetch('https://shift-grab.vercel.app/api/deletePhoneNumber', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ number }),
-    });
-    viewPhoneNumbers();
-}
-
-function addPhoneForm() {
-    console.log("Add Phone Form button clicked"); // Check if this logs
-    document.getElementById('add-phone-form').style.display = 'block';
-}
-
-async function saveNewPhoneNumber() {
-    const name = document.getElementById('new-phone-name').value.trim();
-    const number = document.getElementById('new-phone-number').value.trim();
-    const category = document.getElementById('new-phone-category').value;
-
-    const token = localStorage.getItem('token');
-    await fetch('https://shift-grab.vercel.app/api/addPhoneNumber', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, number, category }),
-    });
-    document.getElementById('add-phone-form').style.display = 'none';
-    viewPhoneNumbers();
-}
-
-// Settings saving shifts
-async function saveShiftTimes() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        alert("You must be logged in to save settings.");
-        return;
-    }
-
-    const morningStart = document.getElementById('morning-start').value;
-    const morningEnd = document.getElementById('morning-end').value;
-    const middayStart = document.getElementById('midday-start').value;
-    const middayEnd = document.getElementById('midday-end').value;
-    const nightStart = document.getElementById('night-start').value;
-    const nightEnd = document.getElementById('night-end').value;
-
-    try {
-        const response = await fetch('https://shift-grab.vercel.app/api/updateUserPreferences', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-                shiftTimes: {
-                    morning: { start: morningStart, end: morningEnd },
-                    midday: { start: middayStart, end: middayEnd },
-                    night: { start: nightStart, end: nightEnd },
-                },
-            }),
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-            alert("Shift times updated successfully!");
-        } else {
-            alert(result.message || "Error saving shift times.");
-        }
-    } catch (error) {
-        console.error("Error saving shift times:", error);
-        alert("Error saving shift times.");
-    }
-}
-
-// Attach the function to the global scope for use in settings.html
-window.saveShiftTimes = saveShiftTimes;
-
-async function addCategory() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        alert("You must be logged in to add a category.");
-        return;
-    }
-
-    const categoryName = document.getElementById('new-category-name').value.trim();
-    if (!categoryName) {
-        alert("Category name cannot be empty.");
-        return;
-    }
-
-    try {
-        const response = await fetch('https://shift-grab.vercel.app/api/addCategory', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ categoryName }),
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-            alert("Category added successfully!");
-            // Optionally, update the category list in the UI
-            loadCategories();
-        } else {
-            alert(result.message || "Error adding category.");
-        }
-    } catch (error) {
-        console.error("Error adding category:", error);
-        alert("Error adding category.");
-    }
-}
-
-// Function to load categories from the server
+// Category Management Functions
 async function loadCategories() {
     const token = localStorage.getItem('token');
-    if (!token) {
-        return;
-    }
+    if (!token) return;
 
     try {
         const response = await fetch('https://shift-grab.vercel.app/api/getCategories', {
@@ -385,10 +278,7 @@ async function loadCategories() {
                 'Content-Type': 'application/json'
             }
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const categories = await response.json();
         const categoryList = document.getElementById('category-list');
@@ -396,10 +286,7 @@ async function loadCategories() {
 
         categories.forEach(category => {
             const listItem = document.createElement('li');
-            listItem.innerHTML = `
-                ${category.name} 
-                <button onclick="removeCategory('${category.name}')">Remove</button>
-            `;
+            listItem.innerHTML = `${category.name} <button onclick="removeCategory('${category.name}')">Remove</button>`;
             categoryList.appendChild(listItem);
         });
     } catch (error) {
@@ -423,11 +310,11 @@ async function removeCategory(categoryName) {
             },
             body: JSON.stringify({ categoryName }),
         });
-
         const result = await response.json();
+
         if (response.ok) {
             alert("Category removed successfully!");
-            loadCategories();  // Refresh the list of categories
+            loadCategories();
         } else {
             alert(result.message || "Error removing category.");
         }
@@ -437,69 +324,69 @@ async function removeCategory(categoryName) {
     }
 }
 
-// Make functions globally accessible
+// Attach Category Management Functions to Window
 window.loadCategories = loadCategories;
 window.removeCategory = removeCategory;
 
-// Load categories when DOM is ready
-document.addEventListener('DOMContentLoaded', loadCategories);
-
-async function updateUserCredentials() {
+// Additional Utility Functions for Handling Phone Numbers, Shifts, etc.
+async function viewPhoneNumbers() {
+    console.log("View Phone Numbers button clicked");
     const token = localStorage.getItem('token');
-    if (!token) {
-        alert("You must be logged in to update your credentials.");
-        return;
-    }
-
-    const newUsername = document.getElementById('new-username').value.trim();
-    const newPassword = document.getElementById('new-password').value.trim();
-
-    if (!newUsername && !newPassword) {
-        alert("Please enter a new username or password.");
-        return;
-    }
-
-    try {
-        const response = await fetch('https://shift-grab.vercel.app/api/updateUsernamePassword', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ newUsername, newPassword }),
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-            alert("Credentials updated successfully!");
-        } else {
-            alert(result.message || "Error updating credentials.");
-        }
-    } catch (error) {
-        console.error("Error updating credentials:", error);
-        alert("Error updating credentials.");
-    }
+    fetch('https://shift-grab.vercel.app/api/getPhoneNumbers', {
+        headers: { 'Authorization': `Bearer ${token}` },
+    })
+    .then(response => response.json())
+    .then(phoneNumbers => displayPhoneNumbers(phoneNumbers))
+    .catch(error => console.error("Error fetching phone numbers:", error));
 }
 
-// Make the function accessible in the HTML
-window.updateUserCredentials = updateUserCredentials;
+function displayPhoneNumbers(phoneNumbers) {
+    const list = document.getElementById('phone-list');
+    list.innerHTML = '';
+    phoneNumbers.forEach(({ name, number, category }) => {
+        const li = document.createElement('li');
+        li.className = 'phone-item';
+        const span = document.createElement('span');
+        span.className = 'phone-info';
+        span.innerHTML = `<strong>${name}</strong>: ${number} (${category})`;
 
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-button';
+        deleteButton.textContent = 'Delete';
+        deleteButton.onclick = () => deletePhoneNumber(number);
 
-// Make viewPhoneNumbers available globally
+        li.appendChild(span);
+        li.appendChild(deleteButton);
+        list.appendChild(li);
+    });
+}
+
+async function deletePhoneNumber(number) {
+    const token = localStorage.getItem('token');
+    await fetch('https://shift-grab.vercel.app/api/deletePhoneNumber', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number }),
+    });
+    viewPhoneNumbers();
+}
+
+async function saveNewPhoneNumber() {
+    const name = document.getElementById('new-phone-name').value.trim();
+    const number = document.getElementById('new-phone-number').value.trim();
+    const category = document.getElementById('new-phone-category').value;
+
+    const token = localStorage.getItem('token');
+    await fetch('https://shift-grab.vercel.app/api/addPhoneNumber', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, number, category }),
+    });
+    document.getElementById('add-phone-form').style.display = 'none';
+    viewPhoneNumbers();
+}
+
+// Make Utility Functions Globally Accessible
 window.viewPhoneNumbers = viewPhoneNumbers;
-window.toggleNav = toggleNav;
-
-// Add navigation toggle function if not already defined in HTML
-function toggleNav() {
-    const drawer = document.getElementById('navDrawer');
-    const overlay = document.getElementById('overlay');
-    
-    if (drawer.classList.contains('open')) {
-        drawer.classList.remove('open');
-        overlay.classList.remove('show');
-    } else {
-        drawer.classList.add('open');
-        overlay.classList.add('show');
-    }
-}
-  
+window.deletePhoneNumber = deletePhoneNumber;
+window.saveNewPhoneNumber = saveNewPhoneNumber;
