@@ -477,6 +477,19 @@ h1.post-shift-heading {
     transition: left 0.3s ease-in-out;
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
     z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-bottom {
+    margin-top: auto;
+    margin-bottom: 20px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 10px;
+}
+
+.nav-item:last-child {
+    margin-top: auto;
 }
 
 .nav-drawer.open {

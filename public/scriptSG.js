@@ -143,6 +143,15 @@ function resetForm() {
     }
 }
 
+// Log out Function 
+function handleLogout() {
+    localStorage.removeItem('token');
+    window.location.href = 'login.html';
+}
+
+// Add to global scope
+window.handleLogout = handleLogout;
+
 // Ensure functions are attached to window
 toggleNav && (window.toggleNav = toggleNav);
 viewPhoneNumbers && (window.viewPhoneNumbers = viewPhoneNumbers);

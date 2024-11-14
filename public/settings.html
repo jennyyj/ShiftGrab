@@ -72,66 +72,21 @@
                 </a>
             </div>
         </div>
-    </div> 
-    <div class="overlay" id="overlay" onclick="toggleNav()"></div>
-    <div class="container mx-auto px-4 py-8" style="padding-top: 60px;">
     </div>
-</div>
-
-<div class="container">
-    <h1 class="manage-heading">Manage Your Phone Numbers</h1>
-    
-    <div class="button-group">
-        <button class="small-button" onclick="viewPhoneNumbers()">
-        <span>VIEW CURRENT</span>
-    </button>
-
-    <button class="small-button" onclick="addPhoneForm()">
-        <span>+ ADD NEW</span>
-    </button>
-    </div>
-    </div>
-
-    <ul id="phone-list"></ul>
-
-    <div id="add-phone-form" style="display:none;">
-        <input type="text" id="new-phone-name" placeholder="Enter Name" required>
-        <input type="text" id="new-phone-number" placeholder="Enter Phone Number" required>
-        <select id="new-phone-category" required>
-            <option value="" disabled selected>Select Category</option>
-            <option value="kitchen">Kitchen</option>
-            <option value="bar">Bar</option>
-            <option value="server">Server</option>
-            <option value="cleaning">Cleaning</option>
-            <option value="security">Security</option>
-            <option value="management">Management</option>
-            <option value="everyone">Everyone</option>
-        </select>
-        <button class="login" onclick="saveNewPhoneNumber()">Save Phone Number</button>
-    </div>
-</div>
-<script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('./service-worker.js')
-          .then(() => console.log('Service Worker registered'))
-          .catch((error) => console.error('Service Worker registration failed:', error));
-      });
-    }
-     function toggleNav() {
-            const drawer = document.getElementById('navDrawer');
-            const overlay = document.getElementById('overlay');
-            
-            if (drawer.classList.contains('open')) {
-                drawer.classList.remove('open');
-                overlay.classList.remove('show');
-            } else {
-                drawer.classList.add('open');
-                overlay.classList.add('show');
-            }
-        }
-          </script>    
-    <script src="./scriptSG.js" defer></script>
-</body>
-</html>
+    <script>
+        function toggleNav() {
+               const drawer = document.getElementById('navDrawer');
+               const overlay = document.getElementById('overlay');
+               
+               if (drawer.classList.contains('open')) {
+                   drawer.classList.remove('open');
+                   overlay.classList.remove('show');
+               } else {
+                   drawer.classList.add('open');
+                   overlay.classList.add('show');
+               }
+           }
+             </script>    
+       <script src="./scriptSG.js" defer></script>
+   </body>
+   </html>
