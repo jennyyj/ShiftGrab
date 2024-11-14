@@ -23,44 +23,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 const uri = process.env.MONGODB_URI;
 
 // Mongoose models 
-const User = mongoose.models.User || mongoose.model('User', new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    settings: {
-        shiftPresets: {
-            morning: { 
-                startTime: { type: String, default: '06:00' }, 
-                endTime: { type: String, default: '14:00' }
-            },
-            midday: { 
-                startTime: { type: String, default: '14:00' }, 
-                endTime: { type: String, default: '22:00' }
-            },
-            night: { 
-                startTime: { type: String, default: '22:00' }, 
-                endTime: { type: String, default: '06:00' }
-            }
-        },
-        categories: {
-            type: [String],
-            default: ['Kitchen', 'Bar', 'Server', 'Cleaning', 'Security', 'Management', 'Everyone']
-        }
-    },
-    phoneNumbers: [{ 
-        name: String, 
-        number: String, 
-        category: String,
-        categories: { type: [String], default: [] }
-    }],
-    jobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
-    lastLogin: { type: Date }
-}, {
-    timestamps: true,
-    strict: false
-}));
+const mongoose = require('mongoose');
 
-// Job Model
-const Job = mongoose.models.Job || mongoose.model('Job', new mongoose.Schema({
+// User Model
+const mongoose = require('mongoose');
+
+// Define Job Schema
+const JobSchema = new mongoose.Schema({
     businessName: { type: String, required: true },
     jobDescription: { type: String }, // Optional
     category: { type: String, required: true },
@@ -81,15 +50,15 @@ const Job = mongoose.models.Job || mongoose.model('Job', new mongoose.Schema({
 }, {
     timestamps: true,
     strict: false
-}));
+});
 
 // Add virtual property for shift status
-JobSchema.virtual('isExpired').get(function() {
+JobSchema.virtual('isExpired').get(function () {
     return this.expiresAt < new Date();
 });
 
 // Add middleware to auto-update status
-JobSchema.pre('save', function(next) {
+JobSchema.pre('save', function (next) {
     // Set expiresAt if not set
     if (!this.expiresAt) {
         const shiftDate = new Date(this.shift.date);
@@ -97,18 +66,64 @@ JobSchema.pre('save', function(next) {
         shiftDate.setHours(parseInt(hours), parseInt(minutes));
         this.expiresAt = shiftDate;
     }
-    
+
     // Auto-update status
     if (this.expiresAt < new Date() && this.status === 'waiting') {
         this.status = 'expired';
     }
-    
+
     next();
 });
 
 // Add indexes for better query performance
 JobSchema.index({ status: 1, expiresAt: 1 });
 JobSchema.index({ user: 1, createdAt: -1 });
+
+// Define Job Model
+const Job = mongoose.models.Job || mongoose.model('Job', JobSchema);
+
+// User Model (Keep as is)
+const User = mongoose.models.User || mongoose.model('User', new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    settings: {
+        shiftPresets: {
+            morning: {
+                startTime: { type: String, default: '06:00' },
+                endTime: { type: String, default: '14:00' }
+            },
+            midday: {
+                startTime: { type: String, default: '14:00' },
+                endTime: { type: String, default: '22:00' }
+            },
+            night: {
+                startTime: { type: String, default: '22:00' },
+                endTime: { type: String, default: '06:00' }
+            }
+        },
+        categories: {
+            type: [String],
+            default: ['Kitchen', 'Bar', 'Server', 'Cleaning', 'Security', 'Management', 'Everyone']
+        }
+    },
+    phoneNumbers: [{
+        name: String,
+        number: String,
+        category: String,
+        categories: { type: [String], default: [] }
+    }],
+    jobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
+    lastLogin: { type: Date }
+}, {
+    timestamps: true,
+    strict: false
+}));
+
+// Export the models
+module.exports = {
+    User,
+    Job
+};
 
 // Connect to MongoDB and start the server
 mongoose.connect(uri)
