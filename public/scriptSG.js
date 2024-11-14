@@ -73,7 +73,10 @@ async function handleJobPost(e) {
 
     let shiftData;
     if (window.selectedShiftOption === 'custom') {
-        const { startDate, startTime, endTime } = window.customShiftTimes || {};
+        const startDate = document.querySelector("input[type='date']").value;
+        const startTime = document.querySelector("input[type='time']").value;
+        const endTime = document.querySelectorAll("input[type='time']")[1].value;
+
         if (!startDate || !startTime || !endTime) {
             alert("Please complete the custom shift details.");
             postShiftButton.disabled = false;
