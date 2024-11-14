@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,8 +12,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-</head>
 
+</head>
 <body>
     <button class="hamburger-btn" onclick="toggleNav()">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -53,7 +52,7 @@
                     Shift Status
                 </a>
             </div>
-
+            
             <!-- Settings and Logout at Bottom -->
             <div class="nav-bottom">
                 <a href="settings.html" class="nav-item">
@@ -74,17 +73,16 @@
             </div>
         </div>
     </div>
-
     <div class="overlay" id="overlay" onclick="toggleNav()"></div>
     <div class="container mx-auto px-4 py-8" style="padding-top: 60px;">
-        <!-- Additional content goes here -->
     </div>
+</div>
 
-    <script>
-        function toggleNav() {
+<script>
+     function toggleNav() {
             const drawer = document.getElementById('navDrawer');
             const overlay = document.getElementById('overlay');
-
+            
             if (drawer.classList.contains('open')) {
                 drawer.classList.remove('open');
                 overlay.classList.remove('show');
@@ -93,51 +91,7 @@
                 overlay.classList.add('show');
             }
         }
-
-        // shiftStatus.html
-        const ShiftStatus = () => {
-            const [activeShifts, setActiveShifts] = React.useState([]);
-            const [pastShifts, setPastShifts] = React.useState([]);
-            const [filterType, setFilterType] = React.useState('all');
-
-            React.useEffect(() => {
-                // Auto-refresh active shifts every minute
-                const interval = setInterval(fetchActiveShifts, 60000);
-                return () => clearInterval(interval);
-            }, []);
-
-            return React.createElement('div', { className: 'shift-status-container' },
-                // Active Shifts Section
-                React.createElement('section', { className: 'active-shifts' },
-                    React.createElement('h2', null, 'Current Shifts'),
-                    activeShifts.map(shift =>
-                        React.createElement(ShiftCard, {
-                            shift,
-                            onStatusChange: handleStatusChange,
-                            onRemove: handleRemoveShift
-                        })
-                    )
-                ),
-
-                // Past Shifts Section with Filters
-                React.createElement('section', { className: 'past-shifts' },
-                    React.createElement('h2', null, 'Past Shift Information'),
-                    React.createElement('div', { className: 'filter-buttons' },
-                        ['all', 'removed', 'claimed', 'unclaimed'].map(type =>
-                            React.createElement('button', {
-                                onClick: () => setFilterType(type),
-                                className: `filter-btn ${filterType === type ? 'active' : ''}`
-                            }, type.charAt(0).toUpperCase() + type.slice(1))
-                        )
-                    ),
-                    pastShifts
-                        .filter(shift => filterType === 'all' || shift.status === filterType)
-                        .map(shift => React.createElement(PastShiftCard, { shift }))
-                )
-            );
-        };
-    </script>
+          </script>    
     <script src="./scriptSG.js" defer></script>
 </body>
-
 </html>
