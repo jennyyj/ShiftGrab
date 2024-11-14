@@ -23,10 +23,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 const uri = process.env.MONGODB_URI;
 
 // Mongoose models 
-
-
-// User Model with enhanced features
-const User = mongoose.model('User', new mongoose.Schema({
+const User = mongoose.models.User || mongoose.model('User', new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     settings: {
@@ -49,26 +46,27 @@ const User = mongoose.model('User', new mongoose.Schema({
             default: ['Kitchen', 'Bar', 'Server', 'Cleaning', 'Security', 'Management', 'Everyone']
         }
     },
-    phoneNumbers: [{
-        name: String,
-        number: String,
-        categories: [String], // Allow multiple categories per contact
-        lastUpdated: { type: Date, default: Date.now }
+    phoneNumbers: [{ 
+        name: String, 
+        number: String, 
+        category: String,
+        categories: { type: [String], default: [] }
     }],
     jobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
-    lastLogin: { type: Date, default: Date.now }
+    lastLogin: { type: Date }
 }, {
-    timestamps: true // Adds createdAt and updatedAt fields
+    timestamps: true,
+    strict: false
 }));
 
-// Job Model with enhanced features
-const Job = mongoose.model('Job', new mongoose.Schema({
+// Job Model
+const Job = mongoose.models.Job || mongoose.model('Job', new mongoose.Schema({
     businessName: { type: String, required: true },
-    jobDescription: { type: String, required: false }, // Made optional
+    jobDescription: { type: String }, // Optional
     category: { type: String, required: true },
     shift: {
         type: { type: String, enum: ['morning', 'midday', 'night', 'custom'], required: true },
-        date: { type: Date, required: true }, // Now required for all shifts
+        date: { type: Date }, // Optional for backward compatibility
         startTime: { type: String, required: true },
         endTime: { type: String, required: true }
     },
@@ -79,17 +77,10 @@ const Job = mongoose.model('Job', new mongoose.Schema({
     },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     claimedBy: { type: String },
-    claimedAt: { type: Date },
-    removedAt: { type: Date },
-    expiresAt: { type: Date, required: true }, // Used for auto-expiring shifts
-    notificationsSent: {
-        claimed: { type: Boolean, default: false },
-        expired: { type: Boolean, default: false }
-    }
+    claimedAt: { type: Date }
 }, {
-    timestamps: true, // Adds createdAt and updatedAt fields
-    toJSON: { virtuals: true }, // Enables virtual properties
-    toObject: { virtuals: true }
+    timestamps: true,
+    strict: false
 }));
 
 // Add virtual property for shift status
