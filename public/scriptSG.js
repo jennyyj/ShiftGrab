@@ -1,8 +1,9 @@
+/* Updated scriptSG.js */
 // Get input elements
-const input = document.getElementById("job-post-input");
 const jobDescription = document.getElementById("job-description");
 const datetimeInput = document.getElementById("datetime-input");
 const postJobForm = document.getElementById("post-job-form");
+const postShiftButton = document.querySelector("button[type='submit']");
 
 // Initialize Flatpickr
 flatpickr(datetimeInput, {
@@ -23,7 +24,7 @@ async function fetchUserInfo() {
     }
 
     try {
-        console.log('Fetching user info...'); // Debug log
+        console.log('Fetching user info...');
         const response = await fetch('https://shift-grab.vercel.app/api/getUserInfo', {
             method: 'GET', 
             headers: {
@@ -37,7 +38,7 @@ async function fetchUserInfo() {
         }
 
         const userData = await response.json();
-        console.log('User data received:', userData); // Debug log
+        console.log('User data received:', userData);
 
         const businessNameInput = document.getElementById('business-name');
         if (businessNameInput) {
@@ -49,22 +50,22 @@ async function fetchUserInfo() {
         return userData;
     } catch (error) {
         console.error('Error fetching user info:', error);
-        // Don't redirect immediately on error, just log it
         return null;
     }
 }
 
 // Add this to ensure the function runs after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, fetching user info...'); // Debug log
+    console.log('DOM loaded, fetching user info...');
     fetchUserInfo();
 });
+
 // Handle job posting
 async function handleJobPost(e) {
     e.preventDefault();
 
-    // Show loading spinner (add spinner code or class here)
-    document.getElementById("post-shift-button").disabled = true;
+    // Disable the submit button to prevent multiple submissions
+    postShiftButton.disabled = true;
 
     const token = localStorage.getItem('token');
     if (!token) {
@@ -76,6 +77,7 @@ async function handleJobPost(e) {
     const category = document.getElementById("category-select").value.trim();
     if (!category) {
         alert("Please select a category.");
+        postShiftButton.disabled = false;
         return;
     }
 
@@ -84,6 +86,7 @@ async function handleJobPost(e) {
         const { startDate, startTime, endTime } = window.customShiftTimes || {};
         if (!startDate || !startTime || !endTime) {
             alert("Please complete the custom shift details.");
+            postShiftButton.disabled = false;
             return;
         }
         shiftData = {
@@ -100,6 +103,7 @@ async function handleJobPost(e) {
         };
     } else {
         alert("Please select a shift type.");
+        postShiftButton.disabled = false;
         return;
     }
 
@@ -131,20 +135,25 @@ async function handleJobPost(e) {
         console.error("Error posting job:", error);
         alert("Error posting job.");
     } finally {
-        // Hide loading spinner or re-enable the button
-        if (postShiftButton) postShiftButton.disabled = false;
+        postShiftButton.disabled = false;
     }
 }
-
 
 // Reset form fields
 function resetForm() {
     jobDescription.value = "";
     document.getElementById("category-select").value = "";
     const shiftSelectorRoot = document.getElementById('shift-selector-root');
-    const shiftSelector = shiftSelectorRoot._reactRootContainer._internalRoot.current;
-    shiftSelector.memoizedProps.onChange({ target: { value: '' } });
+    const shiftSelector = shiftSelectorRoot?._reactRootContainer?._internalRoot?.current;
+    if (shiftSelector && shiftSelector.memoizedProps?.onChange) {
+        shiftSelector.memoizedProps.onChange({ target: { value: '' } });
+    }
 }
+
+// Ensure functions are attached to window
+toggleNav && (window.toggleNav = toggleNav);
+viewPhoneNumbers && (window.viewPhoneNumbers = viewPhoneNumbers);
+
 
 // Fetch and display jobs
 function fetchJobs() {
