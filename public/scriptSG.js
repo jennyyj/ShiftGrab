@@ -14,9 +14,8 @@ async function fetchUserInfo() {
     }
 
     try {
-        console.log('Fetching user info...');
         const response = await fetch('https://shift-grab.vercel.app/api/getUserInfo', {
-            method: 'GET', 
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -37,6 +36,32 @@ async function fetchUserInfo() {
             console.error('Business name input element not found');
         }
         
+        if (userData.categories) {
+            const categorySelect = document.getElementById('category-select');
+            categorySelect.innerHTML = `
+                <option value="" disabled selected>Select Category</option>
+            `;
+            userData.categories.forEach(category => {
+                categorySelect.innerHTML += `<option value="${category}">${category}</option>`;
+            });
+        }
+
+        // Update the shift options based on preferences
+        if (userData.preferences && userData.preferences.shiftTimes) {
+            const shiftSelector = document.getElementById('shift-selector-root');
+            const { morning, midday, night } = userData.preferences.shiftTimes;
+
+            // Update morning, midday, night shift times if available
+            const optionsHtml = `
+                <option value="">Select shift time</option>
+                <option value="morning">Morning (${morning.start} - ${morning.end})</option>
+                <option value="midday">Midday (${midday.start} - ${midday.end})</option>
+                <option value="night">Night (${night.start} - ${night.end})</option>
+                <option value="custom">Custom Time</option>
+            `;
+            shiftSelector.innerHTML = optionsHtml;
+        }
+
         return userData;
     } catch (error) {
         console.error('Error fetching user info:', error);
@@ -44,7 +69,6 @@ async function fetchUserInfo() {
     }
 }
 
-// Add this to ensure the function runs after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, fetching user info...');
     fetchUserInfo();
@@ -366,7 +390,10 @@ async function loadCategories() {
 
         categories.forEach(category => {
             const listItem = document.createElement('li');
-            listItem.textContent = category.name;
+            listItem.innerHTML = `
+                ${category.name} 
+                <button onclick="removeCategory('${category.name}')">Remove</button>
+            `;
             categoryList.appendChild(listItem);
         });
     } catch (error) {
@@ -374,8 +401,41 @@ async function loadCategories() {
     }
 }
 
-// Make addCategory and loadCategories functions globally accessible
-window.addCategory = addCategory;
+async function removeCategory(categoryName) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("You must be logged in to remove a category.");
+        return;
+    }
+
+    try {
+        const response = await fetch('https://shift-grab.vercel.app/api/removeCategory', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ categoryName }),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert("Category removed successfully!");
+            loadCategories();  // Refresh the list of categories
+        } else {
+            alert(result.message || "Error removing category.");
+        }
+    } catch (error) {
+        console.error("Error removing category:", error);
+        alert("Error removing category.");
+    }
+}
+
+// Make functions globally accessible
+window.loadCategories = loadCategories;
+window.removeCategory = removeCategory;
+
+// Load categories when DOM is ready
 document.addEventListener('DOMContentLoaded', loadCategories);
 
 async function updateUserCredentials() {
