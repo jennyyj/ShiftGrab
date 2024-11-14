@@ -63,6 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function handleJobPost(e) {
     e.preventDefault();
 
+    // Show loading spinner (add spinner code or class here)
+    document.getElementById("post-shift-button").disabled = true;
+
     const token = localStorage.getItem('token');
     if (!token) {
         alert("You must be logged in to post a job.");
@@ -76,8 +79,7 @@ async function handleJobPost(e) {
         return;
     }
 
-    // Set shiftData with fallback values for demo purposes
-    let shiftData = { type: '', startTime: '', endTime: '' };
+    let shiftData;
     if (window.selectedShiftOption === 'custom') {
         const { startDate, startTime, endTime } = window.customShiftTimes || {};
         if (!startDate || !startTime || !endTime) {
@@ -117,7 +119,7 @@ async function handleJobPost(e) {
             },
             body: JSON.stringify(job),
         });
-
+        
         const result = await response.json();
         if (response.ok) {
             alert("Job posted successfully!");
@@ -128,6 +130,9 @@ async function handleJobPost(e) {
     } catch (error) {
         console.error("Error posting job:", error);
         alert("Error posting job.");
+    } finally {
+        // Hide loading spinner or re-enable the button
+        if (postShiftButton) postShiftButton.disabled = false;
     }
 }
 

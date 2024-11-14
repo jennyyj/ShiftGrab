@@ -113,19 +113,27 @@
            <script>
             const ShiftSelector = () => {
                 const [selectedOption, setSelectedOption] = React.useState('');
-                const [showCustom, setShowCustom] = React.useState(false);
-                const [customTimes, setCustomTimes] = React.useState({
-                    startDate: '',
-                    startTime: '',
-                    endTime: ''
-                });
-                const [presetShifts] = React.useState({
-                    morning: { label: 'Morning (6:00 AM - 2:00 PM)', start: '06:00', end: '14:00' },
-                    midday: { label: 'Midday (2:00 PM - 10:00 PM)', start: '14:00', end: '22:00' },
-                    night: { label: 'Night (10:00 PM - 6:00 AM)', start: '22:00', end: '06:00' }
-                });
-    
-                // Handler functions for icon clicks
+
+                const handleShiftChange = (e) => {
+                    const value = e.target.value;
+                    setSelectedOption(value);
+                    window.selectedShiftOption = value; // Update global variable for access in other functions
+                };
+
+                return React.createElement('select', {
+                    value: selectedOption,
+                    onChange: handleShiftChange,
+                    className: 'shift-select',
+                    'aria-label': 'Select shift time'
+                },
+                    React.createElement('option', { value: '' }, 'Select shift time'),
+                    React.createElement('option', { value: 'morning' }, 'Morning (6:00 AM - 2:00 PM)'),
+                    React.createElement('option', { value: 'midday' }, 'Midday (2:00 PM - 10:00 PM)'),
+                    React.createElement('option', { value: 'night' }, 'Night (10:00 PM - 6:00 AM)'),
+                    React.createElement('option', { value: 'custom' }, 'Custom Time')
+                );
+            };
+                 // Handler functions for icon clicks
                 const handleCalendarClick = (inputRef) => {
                     if (inputRef && inputRef.current) {
                         inputRef.current.showPicker();
@@ -260,7 +268,6 @@
                         )
                     )
                 );
-            };
     
             // Mount the component
             const root = ReactDOM.createRoot(document.getElementById('shift-selector-root'));
