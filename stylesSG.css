@@ -393,6 +393,30 @@ h1.post-shift-heading {
     background-color: #ff5b5b;
 }
 
+/*business name */
+#business-name {
+    width: 150%;
+    text-align: center;
+    color: #3a73c1;
+    font-size: 24px;
+    border: none;  
+    background: transparent;
+    padding: 10px;
+    margin-bottom: 20px;
+    margin-right: 0;  
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border-radius: 0;  
+}
+
+/* Remove focus outline */
+#business-name:focus {
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
 /* Style the Claim Shift button */
 #claim-btn {
     display: flex; 
