@@ -634,3 +634,48 @@ h1.post-shift-heading {
 .flatpickr-calendar {
     display: none !important;
 }
+
+/* Settings */
+.settings-container {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.settings-container h2 {
+    font-size: 18px;
+    color: #3a73c1;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+label {
+    font-size: 14px;
+    color: #3a73c1;
+    margin-top: 15px;
+    display: block;
+    text-transform: uppercase;
+}
+
+.time-inputs-grid {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 10px;
+}
+
+input[type="time"], input[type="text"], input[type="password"] {
+    width: 45%;
+    padding: 10px;
+    border: 2px solid #3a73c1;
+    border-radius: 25px;
+    text-align: center;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+    input[type="time"], input[type="text"], input[type="password"] {
+        width: 90%;
+    }
+}
