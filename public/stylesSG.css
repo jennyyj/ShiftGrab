@@ -639,6 +639,26 @@ h1.post-shift-heading {
     margin-bottom: 20px;
 }
 
+.settings-container .settings-button {
+    color: #3a73c1;
+    justify-content: center;
+}
+
+button[onclick="addCategory()"] {
+    color: #3a73c1;
+    border: 2px solid #3a73c1;
+    font-weight: bold;
+    justify-content: center;
+
+}
+
+button[onclick="updateUserCredentials()"] {
+    color: #3a73c1;
+    border: 2px solid #3a73c1;
+    font-weight: bold;
+    justify-content: center;
+
+}
 label {
     font-size: 14px;
     color: #3a73c1;
