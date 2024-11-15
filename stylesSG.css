@@ -713,3 +713,70 @@ input[type="time"], input[type="text"], input[type="password"] {
         width: 90%;
     }
 }
+
+/* Calendar style */
+.calendar-container {
+    margin-bottom: 20px;
+    border: 2px solid #52ace4;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.calendar {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.month-header {
+    background-color: #52ace4;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.weekday-header th {
+    padding: 10px;
+    background-color: #f0f8ff;
+    color: #3a73c1;
+    font-weight: bold;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.calendar-day {
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    color: #3a73c1;
+    border: 1px solid #e5e7eb;
+}
+
+.calendar-day:hover {
+    background-color: #f0f8ff;
+}
+
+.calendar-day.selected {
+    background-color: #52ace4;
+    color: white;
+}
+
+.calendar-day.today {
+    font-weight: bold;
+    border: 2px solid #3a73c1;
+}
+
+.time-inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.shift-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #3a73c1;
+    border-radius: 50px;
+    text-align: center;
+    color: #52ace4;
+}
