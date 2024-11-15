@@ -36,7 +36,7 @@ const Job = mongoose.model('Job', new mongoose.Schema({
     category: { type: String, required: true },
     shift: {
         type: { type: String, enum: ['morning', 'midday', 'night', 'custom'], required: true },
-        date: { type: Date }, // Required only for custom shifts
+        date: { type: Date }, 
         startTime: { type: String, required: true },
         endTime: { type: String, required: true }
     },
@@ -199,7 +199,6 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Error posting job or sending SMS.' });
     }
 });
-
 
 app.get('/api/getJobs', authenticateToken, async (req, res) => {
     try {
