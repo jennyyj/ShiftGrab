@@ -8,12 +8,19 @@
 
 /* Ensure body and html can scroll */
 html, body {
-    height: 100vh; /* Ensure the full height is considered */
     margin: 0;
     padding: 0;
     display: flex;
     overflow-y: auto; 
     flex-direction: column;
+}
+
+body.login-page {
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
 }
 
 /* Style the main container to prevent it from stretching too much */
@@ -36,15 +43,6 @@ hr {
     border: none;
     border-top: 2px solid #52ace4;
     margin: 20px 0; /* Add space above and below the line */
-}
- 
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: white;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 .landing-page {
@@ -193,15 +191,6 @@ input::-ms-input-placeholder { /* For Microsoft Edge */
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: white;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 .landing-page {
@@ -610,7 +599,7 @@ h1.post-shift-heading {
 .icon-button {
     position: absolute;
     left: 20px;
-    top: 50%;
+    top: 38%;
     transform: translateY(-50%);
     width: 20px;
     height: 20px;
