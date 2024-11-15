@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
 async function handleJobPost(e) {
     e.preventDefault();
 
-    // Disable the submit button to prevent multiple submissions
     postShiftButton.disabled = true;
 
     const token = localStorage.getItem('token');
@@ -75,14 +74,23 @@ async function handleJobPost(e) {
         return;
     }
 
-    const category = document.getElementById("category-select").value.trim();
+    const categoryElement = document.getElementById("category-select");
+    if (!categoryElement) {
+        console.error("Category select element not found");
+        postShiftButton.disabled = false;
+        return;
+    }
+    const category = categoryElement.value.trim();
     if (!category) {
         alert("Please select a category.");
         postShiftButton.disabled = false;
         return;
     }
 
-    const selectedShiftOption = document.getElementById('shift-selector').value;
+    // Ensure shift data is available
+    const selectedShiftOption = window.selectedShiftOption;
+    const selectedShiftData = window.selectedShiftData;
+
     if (!selectedShiftOption) {
         alert("Please select a shift type.");
         postShiftButton.disabled = false;
@@ -91,44 +99,43 @@ async function handleJobPost(e) {
 
     let shiftData;
     if (selectedShiftOption === 'custom') {
-        const startDate = document.querySelector("input[type='date']").value;
-        const startTime = document.querySelector("input[type='time']").value;
-        const endTime = document.querySelectorAll("input[type='time']")[1].value;
-
-        if (!startDate || !startTime || !endTime) {
+        if (!selectedShiftData || !selectedShiftData.startTime || !selectedShiftData.endTime) {
             alert("Please complete the custom shift details.");
             postShiftButton.disabled = false;
             return;
         }
         shiftData = {
             type: 'custom',
-            date: startDate,
-            startTime,
-            endTime
+            date: selectedShiftData.date || null, // If date is required, ensure it's passed here
+            startTime: selectedShiftData.startTime,
+            endTime: selectedShiftData.endTime
         };
     } else {
-        const presetShifts = {
-            morning: { start: '06:00', end: '14:00' },
-            midday: { start: '14:00', end: '22:00' },
-            night: { start: '22:00', end: '06:00' }
-        };
-
-        if (!presetShifts[selectedShiftOption]) {
-            alert("Please select a valid shift type.");
-            postShiftButton.disabled = false;
-            return;
-        }
-
         shiftData = {
             type: selectedShiftOption,
-            startTime: presetShifts[selectedShiftOption].start,
-            endTime: presetShifts[selectedShiftOption].end
+            startTime: selectedShiftData.startTime,
+            endTime: selectedShiftData.endTime
         };
     }
 
+    const businessNameElement = document.getElementById('business-name');
+    if (!businessNameElement) {
+        console.error("Business name input element not found");
+        postShiftButton.disabled = false;
+        return;
+    }
+    const businessName = businessNameElement.value.trim();
+    const jobDescriptionElement = document.getElementById('job-description');
+    if (!jobDescriptionElement) {
+        console.error("Job description element not found");
+        postShiftButton.disabled = false;
+        return;
+    }
+    const jobDescription = jobDescriptionElement.value.trim() || '';
+
     const job = {
-        businessName: document.getElementById('business-name')?.value.trim(),
-        jobDescription: document.getElementById('job-description')?.value.trim() || '',
+        businessName,
+        jobDescription,
         category,
         shift: shiftData
     };
@@ -142,7 +149,7 @@ async function handleJobPost(e) {
             },
             body: JSON.stringify(job),
         });
-        
+
         const result = await response.json();
         if (response.ok) {
             alert("Job posted successfully!");
@@ -160,9 +167,30 @@ async function handleJobPost(e) {
 
 // Reset form fields
 function resetForm() {
-    jobDescription.value = "";
-    document.getElementById("category-select").value = "";
-    document.getElementById('shift-selector').value = "";
+    const businessNameElement = document.getElementById('business-name');
+    if (businessNameElement) {
+        businessNameElement.value = '';
+    }
+
+    const jobDescriptionElement = document.getElementById('job-description');
+    if (jobDescriptionElement) {
+        jobDescriptionElement.value = '';
+    }
+
+    const categoryElement = document.getElementById('category-select');
+    if (categoryElement) {
+        categoryElement.value = '';
+    }
+
+    // Reset ShiftSelector component
+    const shiftDropdown = document.getElementById('shift-selector');
+    if (shiftDropdown) {
+        shiftDropdown.value = '';
+    }
+
+    // Clear global state for shift selection
+    window.selectedShiftOption = null;
+    window.selectedShiftData = null;
 }
 
 // Log out Function 

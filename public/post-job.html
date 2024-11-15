@@ -128,7 +128,7 @@
         }
     </script>  
     <script>
-        const ShiftSelector = () => {
+        const ShiftSelector = ({ onShiftSelect }) => {
     const [selectedOption, setSelectedOption] = React.useState('');
     const [showCustom, setShowCustom] = React.useState(false);
     const [selectedDate, setSelectedDate] = React.useState('');
@@ -137,11 +137,11 @@
         endTime: ''
     });
 
-    const [presetShifts, setPresetShifts] = React.useState({
+    const presetShifts = {
         morning: { label: 'Morning (6:00 AM - 2:00 PM)', start: '06:00', end: '14:00' },
         midday: { label: 'Midday (2:00 PM - 10:00 PM)', start: '14:00', end: '22:00' },
         night: { label: 'Night (10:00 PM - 6:00 AM)', start: '22:00', end: '06:00' }
-    });
+    };
 
     const handleDateSelect = (date) => {
         setSelectedDate(date);
@@ -151,6 +151,45 @@
             setCustomTimes({
                 startTime: shiftTimes.start,
                 endTime: shiftTimes.end
+            });
+        }
+    };
+
+    const handleShiftChange = (e) => {
+        const value = e.target.value;
+        setSelectedOption(value);
+        setShowCustom(value === 'custom');
+
+        // Update shift times if a preset is selected
+        if (value !== '' && value !== 'custom') {
+            const shiftTimes = presetShifts[value];
+            setCustomTimes({
+                startTime: shiftTimes.start,
+                endTime: shiftTimes.end
+            });
+        }
+
+        // Call the onShiftSelect callback to pass selected data to the parent
+        if (onShiftSelect) {
+            onShiftSelect({
+                type: value,
+                ...(value !== 'custom' ? presetShifts[value] : customTimes)
+            });
+        }
+    };
+
+    const handleCustomTimeChange = (timeType, value) => {
+        setCustomTimes((prev) => ({
+            ...prev,
+            [timeType]: value
+        }));
+
+        // Call onShiftSelect to pass updated custom times
+        if (onShiftSelect && selectedOption === 'custom') {
+            onShiftSelect({
+                type: 'custom',
+                startTime: timeType === 'startTime' ? value : customTimes.startTime,
+                endTime: timeType === 'endTime' ? value : customTimes.endTime
             });
         }
     };
@@ -180,10 +219,7 @@
         // Shift Selection
         React.createElement('select', {
             value: selectedOption,
-            onChange: (e) => {
-                setSelectedOption(e.target.value);
-                setShowCustom(e.target.value === 'custom');
-            },
+            onChange: handleShiftChange,
         },
             React.createElement('option', { value: '' }, 'Select shift time'),
             React.createElement('option', { value: 'morning' }, presetShifts.morning.label),
@@ -199,18 +235,15 @@
                     React.createElement('input', {
                         type: 'time',
                         value: customTimes.startTime,
-                        onChange: (e) => setCustomTimes({...customTimes, startTime: e.target.value}),
+                        onChange: (e) => handleCustomTimeChange('startTime', e.target.value),
                         className: 'shift-input'
-                        
                     })
                 ),
-
-                
                 React.createElement('div', { className: 'input-container' },
                     React.createElement('input', {
                         type: 'time',
                         value: customTimes.endTime,
-                        onChange: (e) => setCustomTimes({...customTimes, endTime: e.target.value}),
+                        onChange: (e) => handleCustomTimeChange('endTime', e.target.value),
                         className: 'shift-input'
                     })
                 )
@@ -262,11 +295,18 @@ function generateCalendarDays(selectedDate, onSelect) {
     
     return weeks;
 }
-// Mount the ShiftSelector component to the root element
-const root = ReactDOM.createRoot(document.getElementById('shift-selector-root'));
-root.render(React.createElement(ShiftSelector));
 
-    </script>
+// Example of integrating with a parent form submission handler
+const root = ReactDOM.createRoot(document.getElementById('shift-selector-root'));
+root.render(React.createElement(ShiftSelector, {
+    onShiftSelect: (shift) => {
+        // Save the selected shift in a global or pass it to the parent form
+        window.selectedShiftOption = shift.type;
+        window.selectedShiftData = shift;
+        console.log('Selected shift:', shift);
+    }
+}));
+</script>
     <script src="./scriptSG.js" defer></script>
 </body>
 </html>
