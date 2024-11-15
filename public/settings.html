@@ -74,26 +74,85 @@
         </div>
     </div>
     <div class="settings-container">
-        <h1>SETTINGS</h1>
-        <h2>SET YOUR SHIFT TIMES</h2>
-        <label for="morning-start">Morning (AM, PM)</label>
-        <div class="time-inputs-grid">
-            <input type="time" id="morning-start">
-            <input type="time" id="morning-end">
-        </div>
-        <label for="midday-start">Midday (AM, PM)</label>
-        <div class="time-inputs-grid">
-            <input type="time" id="midday-start">
-            <input type="time" id="midday-end">
-        </div>
-        <label for="night-start">Night (AM, PM)</label>
-        <div class="time-inputs-grid">
-            <input type="time" id="night-start">
-            <input type="time" id="night-end">
-        </div>
-        <button onclick="saveShiftTimes()">SAVE SHIFT TIMES</button>
-    </div>
+        <h1 class="settings-title">SETTINGS</h1>
     
+        <section class="settings-section">
+            <h2 class="settings-subtitle">SET YOUR SHIFT TIMES</h2>
+            
+            <div class="shift-time-group">
+                <label>Morning (AM, PM)</label>
+                <div class="time-inputs-grid">
+                    <div class="input-container">
+                        <button type="button" class="icon-button">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4484E3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </button>
+                        <input type="time" class="shift-input" id="morning-start">
+                    </div>
+                    <div class="input-container">
+                        <button type="button" class="icon-button">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4484E3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </button>
+                        <input type="time" class="shift-input" id="morning-end">
+                    </div>
+                </div>
+            </div>
+    
+            <div class="shift-time-group">
+                <label>Midday (AM, PM)</label>
+                <div class="time-inputs-grid">
+                    <div class="input-container">
+                        <button type="button" class="icon-button">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4484E3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </button>
+                        <input type="time" class="shift-input" id="midday-start">
+                    </div>
+                    <div class="input-container">
+                        <button type="button" class="icon-button">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4484E3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </button>
+                        <input type="time" class="shift-input" id="midday-end">
+                    </div>
+                </div>
+            </div>
+    
+            <div class="shift-time-group">
+                <label>Night (AM, PM)</label>
+                <div class="time-inputs-grid">
+                    <div class="input-container">
+                        <button type="button" class="icon-button">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4484E3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </button>
+                        <input type="time" class="shift-input" id="night-start">
+                    </div>
+                    <div class="input-container">
+                        <button type="button" class="icon-button">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4484E3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </button>
+                        <input type="time" class="shift-input" id="night-end">
+                    </div>
+                </div>
+            </div>
+    
+            <button class="settings-button">SAVE SHIFT TIMES</button>
+        </section>
     <div class="settings-container">
         <h2>MANAGE YOUR CATEGORIES</h2>
         <input type="text" id="new-category-name" placeholder="Add New Category">
@@ -119,7 +178,52 @@
                    overlay.classList.add('show');
                }
            }
-             </script>    
+             </script> 
+             <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    // References to all time inputs
+                    const timeInputs = {
+                        morningStart: document.getElementById('morning-start'),
+                        morningEnd: document.getElementById('morning-end'),
+                        middayStart: document.getElementById('midday-start'),
+                        middayEnd: document.getElementById('midday-end'),
+                        nightStart: document.getElementById('night-start'),
+                        nightEnd: document.getElementById('night-end')
+                    };
+                
+                    // Add click handlers for each icon button
+                    document.querySelectorAll('.icon-button').forEach(button => {
+                        button.addEventListener('click', () => {
+                            // Find the associated input (next sibling)
+                            const input = button.nextElementSibling;
+                            if (input) {
+                                input.showPicker();
+                            }
+                        });
+                    });
+                
+                    // Add click handlers for inputs
+                    Object.values(timeInputs).forEach(input => {
+                        const button = input.previousElementSibling;
+                        if (button && button.classList.contains('icon-button')) {
+                            button.addEventListener('click', () => {
+                                input.showPicker();
+                            });
+                        }
+                    });
+                });
+                
+                // Make times readable
+                function formatTime(timeStr) {
+                    if (!timeStr) return '';
+                    try {
+                        const date = new Date(`2000-01-01T${timeStr}`);
+                        return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+                    } catch (e) {
+                        return timeStr;
+                    }
+                }
+                </script>   
        <script src="./scriptSG.js" defer></script>
    </body>
    </html>

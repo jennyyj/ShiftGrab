@@ -262,17 +262,32 @@ async function saveShiftTimes() {
     const token = localStorage.getItem('token');
     if (!token) {
         alert("You must be logged in to save settings.");
+        window.location.href = 'login.html';
         return;
     }
 
-    const morningStart = document.getElementById('morning-start').value;
-    const morningEnd = document.getElementById('morning-end').value;
-    const middayStart = document.getElementById('midday-start').value;
-    const middayEnd = document.getElementById('midday-end').value;
-    const nightStart = document.getElementById('night-start').value;
-    const nightEnd = document.getElementById('night-end').value;
+    // Disable the save button while processing
+    const saveButton = document.querySelector('.settings-button');
+    if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
+    }
 
     try {
+        // Get and validate all time inputs
+        const morningStart = document.getElementById('morning-start').value;
+        const morningEnd = document.getElementById('morning-end').value;
+        const middayStart = document.getElementById('midday-start').value;
+        const middayEnd = document.getElementById('midday-end').value;
+        const nightStart = document.getElementById('night-start').value;
+        const nightEnd = document.getElementById('night-end').value;
+
+        // Validate that all times are filled
+        if (!morningStart || !morningEnd || !middayStart || !middayEnd || !nightStart || !nightEnd) {
+            alert("Please fill in all shift times.");
+            return;
+        }
+
         const response = await fetch('https://shift-grab.vercel.app/api/updateUserPreferences', {
             method: 'POST',
             headers: {
@@ -291,14 +306,55 @@ async function saveShiftTimes() {
         const result = await response.json();
         if (response.ok) {
             alert("Shift times updated successfully!");
+            // Optionally refresh the page or update the UI
+            // window.location.reload();
         } else {
-            alert(result.message || "Error saving shift times.");
+            throw new Error(result.message || "Error saving shift times.");
         }
     } catch (error) {
         console.error("Error saving shift times:", error);
-        alert("Error saving shift times.");
+        alert(error.message || "Error saving shift times.");
+    } finally {
+        // Re-enable the save button
+        if (saveButton) {
+            saveButton.disabled = false;
+            saveButton.textContent = 'SAVE SHIFT TIMES';
+        }
     }
 }
+
+// Add this to load existing preferences when the page loads
+async function loadUserPreferences() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const response = await fetch('https://shift-grab.vercel.app/api/getUserPreferences', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const { shiftTimes } = await response.json();
+            
+            // Populate the inputs with existing values
+            if (shiftTimes) {
+                document.getElementById('morning-start').value = shiftTimes.morning.start;
+                document.getElementById('morning-end').value = shiftTimes.morning.end;
+                document.getElementById('midday-start').value = shiftTimes.midday.start;
+                document.getElementById('midday-end').value = shiftTimes.midday.end;
+                document.getElementById('night-start').value = shiftTimes.night.start;
+                document.getElementById('night-end').value = shiftTimes.night.end;
+            }
+        }
+    } catch (error) {
+        console.error("Error loading preferences:", error);
+    }
+}
+
+// Load preferences when page loads
+document.addEventListener('DOMContentLoaded', loadUserPreferences);
 
 // Attach the function to the global scope for use in settings.html
 window.saveShiftTimes = saveShiftTimes;
