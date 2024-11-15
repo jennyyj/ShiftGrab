@@ -32,7 +32,7 @@ const User = mongoose.model('User', new mongoose.Schema({
 
 const Job = mongoose.model('Job', new mongoose.Schema({
     businessName: { type: String, required: true },
-    jobDescription: { type: String, required: true },
+    jobDescription: { type: String }, 
     category: { type: String, required: true },
     shift: {
         type: { type: String, enum: ['morning', 'midday', 'night', 'custom'], required: true },
@@ -44,6 +44,7 @@ const Job = mongoose.model('Job', new mongoose.Schema({
     claimedBy: { type: String },
     claimedAt: { type: Date }
 }));
+
 
 // Connect to MongoDB and start the server
 mongoose.connect(uri)
@@ -160,8 +161,8 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'No phone numbers found for this user.' });
         }
 
-         // Check if shift data is complete
-         if (!shift || !shift.type || !shift.startTime || !shift.endTime) {
+        // Check if shift data is complete
+        if (!shift || !shift.type || !shift.startTime || !shift.endTime) {
             console.error('Error: Incomplete shift data:', shift);
             return res.status(400).json({ message: 'Incomplete shift data. Ensure all shift fields are provided.' });
         }
@@ -176,7 +177,7 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
 
         const job = new Job({
             businessName,
-            jobDescription,
+            jobDescription: jobDescription || 'No description provided',
             shift,
             category,
             user: user._id,
@@ -188,7 +189,7 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
             ? `on ${new Date(shift.date).toLocaleDateString()} from ${shift.startTime} to ${shift.endTime}`
             : `${shift.type} shift (${shift.startTime} - ${shift.endTime})`;
 
-        const message = `New Shift: ${businessName} - ${jobDescription} on ${shiftTime}. Claim the shift: https://shift-grab.vercel.app/claimShift.html?shiftId=${savedJob._id}`;
+        const message = `New Shift: ${businessName} - ${jobDescription || 'No description provided'} ${shiftTime}. Claim the shift: https://shift-grab.vercel.app/claimShift.html?shiftId=${savedJob._id}`;
         const smsPromises = relevantNumbers.map(({ number }) => sendTextBeltSMS(number, message));
         await Promise.all(smsPromises);
 
@@ -198,6 +199,7 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Error posting job or sending SMS.' });
     }
 });
+
 
 app.get('/api/getJobs', authenticateToken, async (req, res) => {
     try {
