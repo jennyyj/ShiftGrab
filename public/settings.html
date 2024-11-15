@@ -74,39 +74,37 @@
         </div>
     </div>
     <div class="settings-container">
-        <h2>Set Shift Times</h2>
-        <label for="morning-start">Morning Start Time:</label>
-        <input type="time" id="morning-start">
-        <label for="morning-end">Morning End Time:</label>
-        <input type="time" id="morning-end">
-    
-        <label for="midday-start">Midday Start Time:</label>
-        <input type="time" id="midday-start">
-        <label for="midday-end">Midday End Time:</label>
-        <input type="time" id="midday-end">
-    
-        <label for="night-start">Night Start Time:</label>
-        <input type="time" id="night-start">
-        <label for="night-end">Night End Time:</label>
-        <input type="time" id="night-end">
-    
-        <button onclick="saveShiftTimes()">Save Shift Times</button>
+        <h2>SET YOUR SHIFT TIMES</h2>
+        <label for="morning-start">Morning (AM, PM)</label>
+        <div class="time-inputs-grid">
+            <input type="time" id="morning-start">
+            <input type="time" id="morning-end">
+        </div>
+        <label for="midday-start">Midday (AM, PM)</label>
+        <div class="time-inputs-grid">
+            <input type="time" id="midday-start">
+            <input type="time" id="midday-end">
+        </div>
+        <label for="night-start">Night (AM, PM)</label>
+        <div class="time-inputs-grid">
+            <input type="time" id="night-start">
+            <input type="time" id="night-end">
+        </div>
+        <button onclick="saveShiftTimes()">SAVE SHIFT TIMES</button>
     </div>
+    
     <div class="settings-container">
-        <h2>Manage Categories</h2>
+        <h2>MANAGE YOUR CATEGORIES</h2>
         <input type="text" id="new-category-name" placeholder="Add New Category">
-        <button onclick="addCategory()">Add Category</button>
-    
-        <ul id="category-list"></ul>
+        <button onclick="addCategory()">ADD NEW CATEGORY</button>
     </div>
+    
     <div class="settings-container">
-        <h2>Change Username & Password</h2>
-        <input type="text" id="new-username" placeholder="New Username">
+        <h2>CHANGE USERNAME OR PASSWORD</h2>
+        <input type="text" id="new-username" placeholder="New Business Name">
         <input type="password" id="new-password" placeholder="New Password">
-        <button onclick="updateUserCredentials()">Update Credentials</button>
-    </div>
-    
-        
+        <button onclick="updateUserCredentials()">UPDATE CREDENTIALS</button>
+    </div>      
     <script>
         function toggleNav() {
                const drawer = document.getElementById('navDrawer');
