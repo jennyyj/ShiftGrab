@@ -65,82 +65,61 @@ document.addEventListener('DOMContentLoaded', () => {
 async function handleJobPost(e) {
     e.preventDefault();
 
+    const postShiftButton = document.querySelector("button[type='submit']");
     postShiftButton.disabled = true;
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-        alert("You must be logged in to post a job.");
-        window.location.href = "login.html";
-        return;
-    }
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("You must be logged in to post a job.");
+            window.location.href = "login.html";
+            return;
+        }
 
-    const categoryElement = document.getElementById("category-select");
-    if (!categoryElement) {
-        console.error("Category select element not found");
-        postShiftButton.disabled = false;
-        return;
-    }
-    const category = categoryElement.value.trim();
-    if (!category) {
-        alert("Please select a category.");
-        postShiftButton.disabled = false;
-        return;
-    }
-
-    // Ensure shift data is available
-    const selectedShiftOption = window.selectedShiftOption;
-    const selectedShiftData = window.selectedShiftData;
-
-    if (!selectedShiftOption) {
-        alert("Please select a shift type.");
-        postShiftButton.disabled = false;
-        return;
-    }
-
-    let shiftData;
-    if (selectedShiftOption === 'custom') {
-        if (!selectedShiftData || !selectedShiftData.startTime || !selectedShiftData.endTime) {
-            alert("Please complete the custom shift details.");
+        // Get category
+        const categoryElement = document.getElementById("category-select");
+        const category = categoryElement.value.trim();
+        if (!category) {
+            alert("Please select a category.");
             postShiftButton.disabled = false;
             return;
         }
-        shiftData = {
-            type: 'custom',
-            date: selectedShiftData.date || null, // If date is required, ensure it's passed here
-            startTime: selectedShiftData.startTime,
-            endTime: selectedShiftData.endTime
+
+        // Verify shift data
+        if (!window.selectedShiftOption || !window.selectedShiftData) {
+            alert("Please select a shift type and time.");
+            postShiftButton.disabled = false;
+            return;
+        }
+
+        // Additional validation for custom shifts
+        if (window.selectedShiftOption === 'custom') {
+            if (!window.selectedShiftData.startTime || !window.selectedShiftData.endTime) {
+                alert("Please select both start and end times for custom shift.");
+                postShiftButton.disabled = false;
+                return;
+            }
+        }
+
+        // Get other form data
+        const businessName = document.getElementById('business-name').value.trim();
+        const jobDescription = document.getElementById('job-description').value.trim() || '';
+
+        // Prepare the job data
+        const job = {
+            businessName,
+            jobDescription,
+            category,
+            shift: {
+                type: window.selectedShiftOption,
+                date: window.selectedShiftData.date,
+                startTime: window.selectedShiftData.startTime,
+                endTime: window.selectedShiftData.endTime
+            }
         };
-    } else {
-        shiftData = {
-            type: selectedShiftOption,
-            startTime: selectedShiftData.startTime,
-            endTime: selectedShiftData.endTime
-        };
-    }
 
-    const businessNameElement = document.getElementById('business-name');
-    if (!businessNameElement) {
-        console.error("Business name input element not found");
-        postShiftButton.disabled = false;
-        return;
-    }
-    const businessName = businessNameElement.value.trim();
-    const jobDescriptionElement = document.getElementById('job-description');
-    if (!jobDescriptionElement) {
-        console.error("Job description element not found");
-        postShiftButton.disabled = false;
-        return;
-    }
-    const jobDescription = jobDescriptionElement.value.trim() || '';
+        console.log('Submitting job:', job); // Debug log
 
-    const job = {
-        businessName,
-        jobDescription,
-        category,
-        shift: shiftData
-    };
-
-    try {
         const response = await fetch('https://shift-grab.vercel.app/api/postJob', {
             method: 'POST',
             headers: {
@@ -164,7 +143,6 @@ async function handleJobPost(e) {
         postShiftButton.disabled = false;
     }
 }
-
 // Reset form fields
 function resetForm() {
     const businessNameElement = document.getElementById('business-name');

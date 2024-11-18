@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Post Shift</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <link rel="stylesheet" href="stylesSG.css">
     <link rel="icon" href="sg.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -85,7 +88,7 @@
                     readonly
                 >
             <form id="post-job-form">
-            <div id="shift-selector-root"></div>
+                <div id="shift-selector-root"></div>
             <select id="category-select" name ="category" required>
                 <option value="" disabled selected>Select Category</option>
                 <option value="kitchen">Kitchen</option>
@@ -128,131 +131,7 @@
         }
     </script>  
     <script>
-        const ShiftSelector = ({ onShiftSelect }) => {
-    const [selectedOption, setSelectedOption] = React.useState('');
-    const [showCustom, setShowCustom] = React.useState(false);
-    const [selectedDate, setSelectedDate] = React.useState('');
-    const [customTimes, setCustomTimes] = React.useState({
-        startTime: '',
-        endTime: ''
-    });
-
-    const presetShifts = {
-        morning: { label: 'Morning (6:00 AM - 2:00 PM)', start: '06:00', end: '14:00' },
-        midday: { label: 'Midday (2:00 PM - 10:00 PM)', start: '14:00', end: '22:00' },
-        night: { label: 'Night (10:00 PM - 6:00 AM)', start: '22:00', end: '06:00' }
-    };
-
-    const handleDateSelect = (date) => {
-        setSelectedDate(date);
-        // If a preset shift is selected, we already have the times
-        if (selectedOption && selectedOption !== 'custom') {
-            const shiftTimes = presetShifts[selectedOption];
-            setCustomTimes({
-                startTime: shiftTimes.start,
-                endTime: shiftTimes.end
-            });
-        }
-    };
-
-    const handleShiftChange = (e) => {
-        const value = e.target.value;
-        setSelectedOption(value);
-        setShowCustom(value === 'custom');
-
-        // Update shift times if a preset is selected
-        if (value !== '' && value !== 'custom') {
-            const shiftTimes = presetShifts[value];
-            setCustomTimes({
-                startTime: shiftTimes.start,
-                endTime: shiftTimes.end
-            });
-        }
-
-        // Call the onShiftSelect callback to pass selected data to the parent
-        if (onShiftSelect) {
-            onShiftSelect({
-                type: value,
-                ...(value !== 'custom' ? presetShifts[value] : customTimes)
-            });
-        }
-    };
-
-    const handleCustomTimeChange = (timeType, value) => {
-        setCustomTimes((prev) => ({
-            ...prev,
-            [timeType]: value
-        }));
-
-        // Call onShiftSelect to pass updated custom times
-        if (onShiftSelect && selectedOption === 'custom') {
-            onShiftSelect({
-                type: 'custom',
-                startTime: timeType === 'startTime' ? value : customTimes.startTime,
-                endTime: timeType === 'endTime' ? value : customTimes.endTime
-            });
-        }
-    };
-
-    return React.createElement('div', { className: 'space-y-4' },
-        // Calendar View (Always visible)
-        React.createElement('div', { className: 'calendar-container' },
-            React.createElement('table', { className: 'calendar' },
-                React.createElement('thead', null,
-                    React.createElement('tr', null,
-                        React.createElement('th', { colSpan: 7, className: 'month-header' },
-                            new Date().toLocaleString('default', { month: 'long', year: 'numeric' })
-                        )
-                    ),
-                    React.createElement('tr', { className: 'weekday-header' },
-                        ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day =>
-                            React.createElement('th', { key: day }, day)
-                        )
-                    )
-                ),
-                React.createElement('tbody', null,
-                    generateCalendarDays(selectedDate, handleDateSelect)
-                )
-            )
-        ),
-
-        // Shift Selection
-        React.createElement('select', {
-            value: selectedOption,
-            onChange: handleShiftChange,
-        },
-            React.createElement('option', { value: '' }, 'Select shift time'),
-            React.createElement('option', { value: 'morning' }, presetShifts.morning.label),
-            React.createElement('option', { value: 'midday' }, presetShifts.midday.label),
-            React.createElement('option', { value: 'night' }, presetShifts.night.label),
-            React.createElement('option', { value: 'custom' }, 'Custom Time')
-        ),
-
-        // Custom Time Inputs (only show if custom is selected)
-        showCustom && React.createElement('div', { className: 'custom-time-container' },
-            React.createElement('div', { className: 'time-inputs-grid' },
-                React.createElement('div', { className: 'input-container' },
-                    React.createElement('input', {
-                        type: 'time',
-                        value: customTimes.startTime,
-                        onChange: (e) => handleCustomTimeChange('startTime', e.target.value),
-                        className: 'shift-input'
-                    })
-                ),
-                React.createElement('div', { className: 'input-container' },
-                    React.createElement('input', {
-                        type: 'time',
-                        value: customTimes.endTime,
-                        onChange: (e) => handleCustomTimeChange('endTime', e.target.value),
-                        className: 'shift-input'
-                    })
-                )
-            )
-        )
-    );
-};
-
-// Helper function to generate calendar days
+        // Helper function to generate calendar days - define this first
 function generateCalendarDays(selectedDate, onSelect) {
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -296,18 +175,178 @@ function generateCalendarDays(selectedDate, onSelect) {
     return weeks;
 }
 
-// Example of integrating with a parent form submission handler
-const root = ReactDOM.createRoot(document.getElementById('shift-selector-root'));
-root.render(React.createElement(ShiftSelector, {
-    onShiftSelect: (shift) => {
-        // Save the selected shift in a global or pass it to the parent form
-        window.selectedShiftOption = shift.type;
-        window.selectedShiftData = shift;
-        console.log('Selected shift:', shift);
-    }
-}));
+// ShiftSelector Component
+const ShiftSelector = ({ onShiftSelect }) => {
+    const [selectedOption, setSelectedOption] = React.useState('');
+    const [showCustom, setShowCustom] = React.useState(false);
+    const [selectedDate, setSelectedDate] = React.useState('');
+    const [customTimes, setCustomTimes] = React.useState({
+        startTime: '',
+        endTime: ''
+    });
+
+    // Define preset shifts with their times
+    const presetShifts = {
+        morning: { label: 'Morning (6:00 AM - 2:00 PM)', startTime: '06:00', endTime: '14:00' },
+        midday: { label: 'Midday (2:00 PM - 10:00 PM)', startTime: '14:00', endTime: '22:00' },
+        night: { label: 'Night (10:00 PM - 6:00 AM)', startTime: '22:00', endTime: '06:00' }
+    };
+
+    const handleDateSelect = (date) => {
+        setSelectedDate(date);
+        if (selectedOption) {
+            updateGlobalShiftData(selectedOption, date);
+        }
+    };
+
+    const updateGlobalShiftData = (shiftType, date = selectedDate) => {
+        let shiftData;
+        if (shiftType === 'custom') {
+            shiftData = {
+                type: 'custom',
+                date: date ? date.toISOString().split('T')[0] : null,
+                startTime: customTimes.startTime,
+                endTime: customTimes.endTime
+            };
+        } else if (shiftType && presetShifts[shiftType]) {
+            shiftData = {
+                type: shiftType,
+                date: date ? date.toISOString().split('T')[0] : null,
+                startTime: presetShifts[shiftType].startTime,
+                endTime: presetShifts[shiftType].endTime
+            };
+        }
+
+        // Always update the global state
+        window.selectedShiftOption = shiftType;
+        window.selectedShiftData = shiftData;
+        console.log('Updated shift data:', shiftData);
+    };
+
+    const handleShiftChange = (e) => {
+        const value = e.target.value;
+        setSelectedOption(value);
+        setShowCustom(value === 'custom');
+
+        if (value === 'custom') {
+            // Reset custom times when switching to custom
+            setCustomTimes({ startTime: '', endTime: '' });
+            window.selectedShiftOption = 'custom';
+            window.selectedShiftData = {
+                type: 'custom',
+                date: selectedDate ? selectedDate.toISOString().split('T')[0] : null,
+                startTime: '',
+                endTime: ''
+            };
+        } else if (presetShifts[value]) {
+            // Handle preset shifts
+            const shiftTimes = presetShifts[value];
+            setCustomTimes({
+                startTime: shiftTimes.startTime,
+                endTime: shiftTimes.endTime
+            });
+            updateGlobalShiftData(value);
+        }
+    };
+
+    const handleCustomTimeChange = (timeType, value) => {
+        const newCustomTimes = {
+            ...customTimes,
+            [timeType]: value
+        };
+        setCustomTimes(newCustomTimes);
+
+        // Update global state immediately when custom times change
+        if (selectedOption === 'custom') {
+            window.selectedShiftOption = 'custom';
+            window.selectedShiftData = {
+                type: 'custom',
+                date: selectedDate ? selectedDate.toISOString().split('T')[0] : null,
+                startTime: timeType === 'startTime' ? value : customTimes.startTime,
+                endTime: timeType === 'endTime' ? value : customTimes.endTime
+            };
+        }
+        console.log('Custom time updated:', window.selectedShiftData);
+    };
+
+
+    // Main render return
+    return React.createElement('div', { className: 'shift-selector-container' },
+        // Calendar View
+        React.createElement('div', { className: 'calendar-container' },
+            React.createElement('table', { className: 'calendar' },
+                React.createElement('thead', null,
+                    React.createElement('tr', null,
+                        React.createElement('th', { colSpan: 7, className: 'month-header' },
+                            new Date().toLocaleString('default', { month: 'long', year: 'numeric' })
+                        )
+                    ),
+                    React.createElement('tr', { className: 'weekday-header' },
+                        ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day =>
+                            React.createElement('th', { key: day }, day)
+                        )
+                    )
+                ),
+                React.createElement('tbody', null,
+                    generateCalendarDays(selectedDate, handleDateSelect)
+                )
+            )
+        ),
+
+        // Shift Selection
+        React.createElement('div', { className: 'shift-selection-container' },
+            React.createElement('select', {
+                value: selectedOption,
+                onChange: handleShiftChange,
+                className: 'shift-select'
+            },
+                React.createElement('option', { value: '' }, 'Select shift time'),
+                Object.entries(presetShifts).map(([key, { label }]) =>
+                    React.createElement('option', { key, value: key }, label)
+                ),
+                React.createElement('option', { value: 'custom' }, 'Custom Time')
+            ),
+
+            // Custom Time Inputs
+            showCustom && React.createElement('div', { className: 'custom-time-container' },
+                React.createElement('div', { className: 'time-inputs-grid' },
+                    React.createElement('div', { className: 'input-container' },
+                        React.createElement('label', null, 'Start Time'),
+                        React.createElement('input', {
+                            type: 'time',
+                            value: customTimes.startTime,
+                            onChange: (e) => handleCustomTimeChange('startTime', e.target.value),
+                            className: 'shift-input'
+                        })
+                    ),
+                    React.createElement('div', { className: 'input-container' },
+                        React.createElement('label', null, 'End Time'),
+                        React.createElement('input', {
+                            type: 'time',
+                            value: customTimes.endTime,
+                            onChange: (e) => handleCustomTimeChange('endTime', e.target.value),
+                            className: 'shift-input'
+                        })
+                    )
+                )
+            )
+        )
+    );
+};
+
+// Initialize the component when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const root = ReactDOM.createRoot(document.getElementById('shift-selector-root'));
+    root.render(React.createElement(ShiftSelector, {
+        onShiftSelect: (shift) => {
+            window.selectedShiftOption = shift.type;
+            window.selectedShiftData = shift;
+            console.log('Shift selected:', shift);
+        }
+    }));
+});
 </script>
+    </script>
     <script src="./scriptSG.js" defer></script>
 </body>
 </html>
-
