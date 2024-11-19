@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
@@ -116,6 +117,59 @@ async function sendTextBeltSMS(phoneNumber, message) {
         console.error(`Error sending SMS to ${phoneNumber}: ${error.message}`);
     }
 }
+// API and Routers 
+// Get the most recent shift
+router.get('/api/getRecentShift', authenticateToken, async (req, res) => {
+    try {
+      const recentShift = await Job.findOne({ user: req.user._id }).sort({ 'shift.date': -1 });
+      if (!recentShift) {
+        return res.status(404).json({ message: 'No recent shift found' });
+      }
+      res.status(200).json(recentShift);
+    } catch (error) {
+      console.error('Error fetching recent shift:', error);
+      res.status(500).json({ message: 'Error fetching recent shift' });
+    }
+  });
+// Update the status of a shift
+router.post('/api/updateShiftStatus', authenticateToken, async (req, res) => {
+    const { shiftId, status } = req.body;
+    try {
+      const shift = await Job.findById(shiftId);
+      if (!shift) {
+        return res.status(404).json({ message: 'Shift not found' });
+      }
+      shift.status = status;
+      await shift.save();
+      res.status(200).json({ message: 'Shift status updated successfully', shift });
+    } catch (error) {
+      console.error('Error updating shift status:', error);
+      res.status(500).json({ message: 'Error updating shift status' });
+    }
+  });
+// Get past shifts based on filter
+router.get('/api/getPastShifts', authenticateToken, async (req, res) => {
+    const { filter } = req.query;
+    try {
+      let query = { user: req.user._id };
+      if (filter === 'claimed') {
+        query.status = 'claimed';
+      } else if (filter === 'unclaimed') {
+        query.status = 'unclaimed';
+      } else if (filter === 'removed') {
+        query.status = 'removed';
+      }
+      const pastShifts = await Job.find(query).sort({ 'shift.date': -1 });
+      res.status(200).json(pastShifts);
+    } catch (error) {
+      console.error('Error fetching past shifts:', error);
+      res.status(500).json({ message: 'Error fetching past shifts' });
+    }
+  });
+  
+  // Attach router to the main Express app
+  module.exports = router;
+    
 
 // API Routes
 app.post('/api/register', async (req, res) => {

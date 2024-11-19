@@ -76,8 +76,206 @@
     <div class="overlay" id="overlay" onclick="toggleNav()"></div>
     <div class="container mx-auto px-4 py-8" style="padding-top: 60px;">
     </div>
+    <div class="container">
+        <!-- Section to display the most recent shift -->
+        <div id="recent-shift">
+            <!-- JavaScript will dynamically add recent shift details here -->
+        </div>
+        <style>
+            /* Container for the shift section */
+            #past-shift-info {
+                display: flex;
+                justify-content: center; /* Center the buttons horizontally */
+                align-items: center;
+                gap: 30px; /* Space between the buttons */
+                margin-top: 30px; /* Additional space at the top */
+                flex-wrap: wrap; /* Wrap to the next line if needed */
+            }
+        
+            /* Button styling */
+            #past-shift-info button {
+                border: 2px solid #3a73c1; /* Blue border */
+                border-radius: 50px; /* More rounded for pill-like effect */
+                padding: 10px 25px; /* Adjust padding for size and style */
+                background-color: white; /* Background color */
+                cursor: pointer;
+                transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+                color: #3a73c1; /* Blue text color */
+                font-weight: bold;
+                font-size: 16px; /* Font size */
+            }
+        
+            #past-shift-info button:hover {
+                background-color: #e6f0ff; /* Light blue on hover */
+            }
+        
+            /* Header styling */
+            .shift-header {
+                text-align: center;
+                font-weight: bold;
+                color: #3a73c1; /* Blue text color */
+                margin-bottom: 20px;
+                font-size: 24px; /* Larger font size for emphasis */
+            }
+        </style>
+        
+        <!-- Updated HTML structure -->
+        <div class="shift-header">
+            PAST SHIFT INFORMATION
+        </div>
+        <div id="past-shift-info">
+            <button id="all-shifts-btn">All Past Shifts</button>
+            <button id="removed-shifts-btn">Removed Shifts</button>
+            <button id="claimed-shifts-btn">Claimed Shifts</button>
+            <button id="unclaimed-shifts-btn">Not Claimed Shifts</button>
+        </div>
+    </div> 
 </div>
-
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const recentShiftContainer = document.querySelector('#recent-shift');
+        const pastShiftContainer = document.querySelector('#past-shift-container'); // Correct the container
+        const token = localStorage.getItem('token');
+    
+        // Check if token is available
+        if (!token) {
+            console.error("No token found in localStorage. Please log in.");
+            return;
+        }
+    
+        // Fetch and display the most recent shift
+        async function fetchRecentShift() {
+            try {
+                const response = await fetch('https://shift-grab.vercel.app/api/getRecentShift', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const shift = await response.json();
+        
+                if (response.ok && shift) {
+                    recentShiftContainer.innerHTML = `
+                        <h2>Recent Shift</h2>
+                        <p><strong>Date/Time:</strong> ${new Date(shift.shift.date).toLocaleString()}</p>
+                        <p><strong>Category:</strong> ${shift.category}</p>
+                        <p><strong>Status:</strong> <span id="live-status">${shift.status}</span></p>
+                        <button id="remove-shift-btn">Remove Shift</button>
+                    `;
+        
+                    // Handle the remove shift button click
+                    document.querySelector('#remove-shift-btn').addEventListener('click', () => {
+                        console.log(`Removing shift with ID: ${shift._id}`); // Debug log
+                        removeShift(shift._id);
+                    });
+        
+                    // Start timer if shift is claimed
+                    if (shift.status === 'claimed') {
+                        console.log("Shift is claimed, setting a 10-minute timer to move it.");
+                        setTimeout(() => {
+                            moveToClaimedShifts(shift._id);
+                        }, 600000); // 10 minutes
+                    }
+                } else {
+                    console.error("Failed to fetch recent shift:", shift.message);
+                }
+            } catch (error) {
+                console.error('Error fetching recent shift:', error);
+            }
+        }
+    
+        // Remove shift function
+        async function removeShift(shiftId) {
+            try {
+                console.log(`Attempting to remove shift with ID: ${shiftId}`);
+                const response = await fetch('https://shift-grab.vercel.app/api/updateShiftStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ shiftId, status: 'removed' })
+                });
+        
+                if (response.ok) {
+                    alert('Shift removed successfully.');
+                    fetchRecentShift();
+                } else {
+                    const result = await response.json();
+                    console.error("Error removing shift:", result.message);
+                }
+            } catch (error) {
+                console.error('Error removing shift:', error);
+            }
+        }
+    
+        // Move shift to claimed shifts after 10 minutes
+        async function moveToClaimedShifts(shiftId) {
+            try {
+                console.log(`Attempting to move shift with ID: ${shiftId} to claimed.`);
+                const response = await fetch('https://shift-grab.vercel.app/api/updateShiftStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ shiftId, status: 'claimed' })
+                });
+        
+                if (response.ok) {
+                    fetchRecentShift();
+                } else {
+                    const result = await response.json();
+                    console.error("Error moving shift to claimed:", result.message);
+                }
+            } catch (error) {
+                console.error('Error updating shift status:', error);
+            }
+        }
+    
+        // Fetch and display past shifts based on filter
+        async function fetchPastShifts(filter) {
+            console.log(`Fetching past shifts with filter: ${filter}`);
+            try {
+                const response = await fetch(`https://shift-grab.vercel.app/api/getPastShifts?filter=${filter}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const shifts = await response.json();
+        
+                if (response.ok) {
+                    console.log("Successfully fetched past shifts:", shifts);
+                    pastShiftContainer.innerHTML = shifts.map(shift => `
+                        <div class="past-shift">
+                            <p><strong>Business:</strong> ${shift.businessName}</p>
+                            <p><strong>Date/Time:</strong> ${new Date(shift.shift.date).toLocaleString()}</p>
+                            <p><strong>Category:</strong> ${shift.category}</p>
+                            <p><strong>Status:</strong> ${shift.status}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    console.error("Failed to fetch past shifts:", shifts.message);
+                }
+            } catch (error) {
+                console.error('Error fetching past shifts:', error);
+            }
+        }
+    
+        // Event listeners for past shift filters
+        document.querySelector('#all-shifts-btn').addEventListener('click', () => fetchPastShifts('all'));
+        document.querySelector('#removed-shifts-btn').addEventListener('click', () => fetchPastShifts('removed'));
+        document.querySelector('#claimed-shifts-btn').addEventListener('click', () => fetchPastShifts('claimed'));
+        document.querySelector('#unclaimed-shifts-btn').addEventListener('click', () => fetchPastShifts('unclaimed'));
+    
+        // Initial load
+        fetchRecentShift();
+    });
+    </script>
+      
 <script>
      function toggleNav() {
             const drawer = document.getElementById('navDrawer');
