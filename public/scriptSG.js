@@ -76,36 +76,23 @@ async function handleJobPost(e) {
             return;
         }
 
-        // Get category
-        const categoryElement = document.getElementById("category-select");
-        const category = categoryElement.value.trim();
-        if (!category) {
-            alert("Please select a category.");
-            postShiftButton.disabled = false;
-            return;
-        }
-
-        // Verify shift data
-        if (!window.selectedShiftOption || !window.selectedShiftData) {
-            alert("Please select a shift type and time.");
-            postShiftButton.disabled = false;
-            return;
-        }
-
-        // Additional validation for custom shifts
-        if (window.selectedShiftOption === 'custom') {
-            if (!window.selectedShiftData.startTime || !window.selectedShiftData.endTime) {
-                alert("Please select both start and end times for custom shift.");
-                postShiftButton.disabled = false;
-                return;
-            }
-        }
-
         // Get other form data
         const businessName = document.getElementById('business-name').value.trim();
         const jobDescription = document.getElementById('job-description').value.trim() || '';
+        const category = document.getElementById('category-select').value.trim();
 
-        // Prepare the job data
+        if (!category) {
+            alert('Please select a category.');
+            postShiftButton.disabled = false;
+            return;
+        }
+
+        if (!window.selectedShiftOption || !window.selectedShiftData) {
+            alert('Please select a shift type and time.');
+            postShiftButton.disabled = false;
+            return;
+        }
+
         const job = {
             businessName,
             jobDescription,
@@ -118,8 +105,6 @@ async function handleJobPost(e) {
             }
         };
 
-        console.log('Submitting job:', job); // Debug log
-
         const response = await fetch('https://shift-grab.vercel.app/api/postJob', {
             method: 'POST',
             headers: {
@@ -129,19 +114,20 @@ async function handleJobPost(e) {
             body: JSON.stringify(job),
         });
 
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Error posting job: ${errorText}`);
+            throw new Error('Error posting job');
+        }
+
         const result = await response.json();
-        if (response.ok) {
-            alert("Job posted successfully!");
-            const jobId = result.job._id; // This line ensures jobId is defined correctly
-            console.log(`Job ID to fetch: ${jobId}`); // Now jobId is properly defined
-            localStorage.setItem('lastPostedJobId', jobId);  // Store the job ID
-            window.location.href = 'shiftstatus.html';  // Redirect to shift status page
-        } else {
-            alert(result.message || "Error posting job.");
-        }        
+        alert("Job posted successfully!");
+        const jobId = result.job._id;
+        localStorage.setItem('lastPostedJobId', jobId);
+        window.location.href = 'shiftstatus.html';
     } catch (error) {
-        console.error("Error posting job:", error);
-        alert("Error posting job.");
+        console.error('Error posting job:', error);
+        alert('Error posting job.');
     } finally {
         postShiftButton.disabled = false;
     }

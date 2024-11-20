@@ -133,41 +133,41 @@
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        const token = localStorage.getItem('token');
-        const jobId = localStorage.getItem('lastPostedJobId');
+    const token = localStorage.getItem('token');
+    const jobId = localStorage.getItem('lastPostedJobId');
 
-        if (!token || !jobId) {
-            document.getElementById('recent-shift').innerHTML = "No recent shift found.";
-            return;
-        }
-
-        try {
-    const response = await fetch(`https://shift-grab.vercel.app/api/getJob/${jobId}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text(); // Capture the error response as text
-        throw new Error(`Error: ${errorText}`);
+    if (!token || !jobId) {
+        document.getElementById('recent-shift').innerHTML = "No recent shift found.";
+        return;
     }
 
-    const job = await response.json();
-            document.getElementById('recent-shift').innerHTML = `
-                <strong>Shift Posted:</strong><br>
-                Business: ${job.businessName}<br>
-                Description: ${job.jobDescription}<br>
-                Date: ${new Date(job.shift.date).toLocaleString()}<br>
-                Time: ${job.shift.startTime} - ${job.shift.endTime}<br>
-                Claimed By: ${job.claimedBy || 'Not yet claimed'}
-            `;
-        } catch (error) {
-    console.error('Error fetching shift details:', error);
-    document.getElementById('recent-shift').innerHTML = 'Error fetching recent shift details.';
-}
-    });
+    try {
+        const response = await fetch(`https://shift-grab.vercel.app/api/getJob/${jobId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error: ${errorText}`);
+        }
+
+        const job = await response.json();
+        document.getElementById('recent-shift').innerHTML = `
+            <strong>Shift Posted:</strong><br>
+            Business: ${job.businessName}<br>
+            Description: ${job.jobDescription}<br>
+            Date: ${new Date(job.shift.date).toLocaleString()}<br>
+            Time: ${job.shift.startTime} - ${job.shift.endTime}<br>
+            Claimed By: ${job.claimedBy || 'Not yet claimed'}
+        `;
+    } catch (error) {
+        console.error('Error fetching shift details:', error);
+        document.getElementById('recent-shift').innerHTML = 'Error fetching recent shift details.';
+    }
+});
 </script>
 
 <script>

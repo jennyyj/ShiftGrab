@@ -6,7 +6,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const axios = require('axios');
-require('dotenv').config();
 
 const app = express();
 
@@ -87,6 +86,18 @@ app.get('/post-job', (req, res) => {
 
 app.get('/claimShift', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'claimShift.html'));
+});
+
+app.get('/api/getRecentShift', authenticateToken, async (req, res) => {
+    try {
+        const recentShift = await Job.findOne({ user: req.user.username }).sort({ shift: -1 });
+        if (!recentShift) {
+            return res.status(404).json({ message: 'No recent shift found' });
+        }
+        res.status(200).json(recentShift);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching recent shift', error });
+    }
 });
 
 // TextBelt API key
