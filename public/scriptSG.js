@@ -62,17 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Handle job posting
-document.addEventListener('DOMContentLoaded', () => {
-    // Ensure the form element is loaded before adding an event listener
-    const postJobForm = document.getElementById('post-job-form');
-    if (postJobForm) {
-        postJobForm.addEventListener('submit', handleJobPost);
-    } else {
-        console.error('Post Job Form element not found');
-    }
-});
-
-// Adjust fetch function to validate response properly
 async function handleJobPost(e) {
     e.preventDefault();
 
@@ -89,7 +78,7 @@ async function handleJobPost(e) {
 
         // Get category
         const categoryElement = document.getElementById("category-select");
-        const category = categoryElement ? categoryElement.value.trim() : '';
+        const category = categoryElement.value.trim();
         if (!category) {
             alert("Please select a category.");
             postShiftButton.disabled = false;
@@ -113,10 +102,8 @@ async function handleJobPost(e) {
         }
 
         // Get other form data
-        const businessNameElement = document.getElementById('business-name');
-        const jobDescriptionElement = document.getElementById('job-description');
-        const businessName = businessNameElement ? businessNameElement.value.trim() : '';
-        const jobDescription = jobDescriptionElement ? jobDescriptionElement.value.trim() : '';
+        const businessName = document.getElementById('business-name').value.trim();
+        const jobDescription = document.getElementById('job-description').value.trim() || '';
 
         // Prepare the job data
         const job = {
@@ -142,24 +129,24 @@ async function handleJobPost(e) {
             body: JSON.stringify(job),
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`Error posting job: ${errorText}`);
-            throw new Error('Error posting job');
-        }
-
         const result = await response.json();
-        alert("Job posted successfully!");
-        const jobId = result.job._id;
-        localStorage.setItem('lastPostedJobId', jobId);
-        window.location.href = 'shiftstatus.html';
+        if (response.ok) {
+            alert("Job posted successfully!");
+            const jobId = result.job._id; // This line ensures jobId is defined correctly
+            console.log(`Job ID to fetch: ${jobId}`); // Now jobId is properly defined
+            localStorage.setItem('lastPostedJobId', jobId);  // Store the job ID
+            window.location.href = 'shiftstatus.html';  // Redirect to shift status page
+        } else {
+            alert(result.message || "Error posting job.");
+        }        
     } catch (error) {
-        console.error('Error posting job:', error);
-        alert('Error posting job.');
+        console.error("Error posting job:", error);
+        alert("Error posting job.");
     } finally {
         postShiftButton.disabled = false;
     }
 }
+
 // Reset form fields
 function resetForm() {
     const businessNameElement = document.getElementById('business-name');
