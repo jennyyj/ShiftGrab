@@ -44,10 +44,14 @@ async function fetchUserInfo() {
     }
 }
 
-// Add this to ensure the function runs after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, fetching user info...');
-    fetchUserInfo();
+    // Ensure the form element is loaded before adding an event listener
+    const postJobForm = document.getElementById('post-job-form');
+    if (postJobForm) {
+        postJobForm.addEventListener('submit', handleJobPost);
+    } else {
+        console.error('Post Job Form element not found');
+    }
 
     // Update selectedShiftOption when a shift is selected
     const shiftDropdown = document.getElementById('shift-selector'); // Adjust the selector to match your dropdown ID
@@ -58,6 +62,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } else {
         console.error('Shift dropdown not found');
+    }
+
+    // Fetch user info once DOM is loaded
+    console.log('DOM loaded, fetching user info...');
+    fetchUserInfo();
+
+    // Load categories
+    loadCategories();
+
+    // Fetch recent shift for shift status page
+    if (document.getElementById('recent-shift')) {
+        fetchRecentShift();
     }
 });
 
@@ -78,7 +94,7 @@ async function handleJobPost(e) {
 
         // Get category
         const categoryElement = document.getElementById("category-select");
-        const category = categoryElement.value.trim();
+        const category = categoryElement ? categoryElement.value.trim() : '';
         if (!category) {
             alert("Please select a category.");
             postShiftButton.disabled = false;
@@ -102,8 +118,10 @@ async function handleJobPost(e) {
         }
 
         // Get other form data
-        const businessName = document.getElementById('business-name').value.trim();
-        const jobDescription = document.getElementById('job-description').value.trim() || '';
+        const businessNameElement = document.getElementById('business-name');
+        const jobDescriptionElement = document.getElementById('job-description');
+        const businessName = businessNameElement ? businessNameElement.value.trim() : '';
+        const jobDescription = jobDescriptionElement ? jobDescriptionElement.value.trim() : '';
 
         // Prepare the job data
         const job = {
@@ -132,18 +150,56 @@ async function handleJobPost(e) {
         const result = await response.json();
         if (response.ok) {
             alert("Job posted successfully!");
-            const jobId = result.job._id; // This line ensures jobId is defined correctly
-            console.log(`Job ID to fetch: ${jobId}`); // Now jobId is properly defined
-            localStorage.setItem('lastPostedJobId', jobId);  // Store the job ID
+            const jobId = result.job._id;
+            console.log(`Job ID to fetch: ${jobId}`);
+            localStorage.setItem('lastPostedJobId', jobId);  // Store the job ID in localStorage
             window.location.href = 'shiftstatus.html';  // Redirect to shift status page
         } else {
             alert(result.message || "Error posting job.");
-        }        
+        }
     } catch (error) {
-        console.error("Error posting job:", error);
-        alert("Error posting job.");
+        console.error('Error posting job:', error);
+        alert('Error posting job.');
     } finally {
         postShiftButton.disabled = false;
+    }
+}
+
+// Fetch recent shift for shift status page
+async function fetchRecentShift() {
+    const token = localStorage.getItem('token');
+    const jobId = localStorage.getItem('lastPostedJobId');
+
+    if (!token || !jobId) {
+        document.getElementById('recent-shift').innerHTML = "No recent shift found.";
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://shift-grab.vercel.app/api/getJob/${jobId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error: ${response.status} - ${errorText}`);
+        }
+
+        const job = await response.json();
+        document.getElementById('recent-shift').innerHTML = `
+            <strong>Shift Posted:</strong><br>
+            Business: ${job.businessName}<br>
+            Description: ${job.jobDescription}<br>
+            Date: ${new Date(job.shift.date).toLocaleString()}<br>
+            Time: ${job.shift.startTime} - ${job.shift.endTime}<br>
+            Claimed By: ${job.claimedBy || 'Not yet claimed'}
+        `;
+    } catch (error) {
+        console.error('Error fetching shift details:', error);
+        document.getElementById('recent-shift').innerHTML = 'Error fetching recent shift details. Please check your connection and try again.';
     }
 }
 
@@ -195,11 +251,10 @@ async function loadCategories() {
         return;
     }
 
-    // Get the element that will display the categories
     const categoryList = document.getElementById('category-list');
     if (!categoryList) {
-        console.error("Category list element not found. Make sure the HTML has the element with ID 'category-list'.");
-        return;  // Add this return to prevent further execution if the element is not found
+        console.error("Category list element not found");
+        return;
     }
 
     try {
@@ -212,7 +267,7 @@ async function loadCategories() {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error('Failed to fetch categories');
         }
 
         const categories = await response.json();
@@ -227,7 +282,7 @@ async function loadCategories() {
     }
 }
 
-// Add this to ensure `loadCategories()` runs after DOM is loaded
+// Add this to load existing preferences when the page loads
 document.addEventListener('DOMContentLoaded', loadCategories);
 
 // Fetch and display jobs

@@ -6,14 +6,15 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const axios = require('axios');
+require('dotenv').config();
 
 const app = express();
 
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors()); // This will allow all origins
-app.options('*', cors()); // Handle preflight requests
+app.use(cors());
+app.options('*', cors());
 
 // JWT Secret Key
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
@@ -44,7 +45,6 @@ const Job = mongoose.model('Job', new mongoose.Schema({
     claimedAt: { type: Date }
 }));
 
-
 // Connect to MongoDB and start the server
 mongoose.connect(uri)
     .then(() => {
@@ -71,32 +71,17 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// Serve HTML Pages from the Public Directory
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'register.html'));
-});
-
-app.get('/post-job', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'post-job.html'));
-});
-
-app.get('/claimShift', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'claimShift.html'));
-});
-
+// Add the Missing API Endpoint for getRecentShift
 app.get('/api/getRecentShift', authenticateToken, async (req, res) => {
     try {
-        const recentShift = await Job.findOne({ user: req.user.username }).sort({ shift: -1 });
+        const recentShift = await Job.findOne({ user: req.user._id }).sort({ 'shift.date': -1 });
         if (!recentShift) {
             return res.status(404).json({ message: 'No recent shift found' });
         }
         res.status(200).json(recentShift);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching recent shift', error });
+        console.error('Error fetching recent shift:', error);
+        res.status(500).json({ message: 'Internal server error while fetching recent shift' });
     }
 });
 
