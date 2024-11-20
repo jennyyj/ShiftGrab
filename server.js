@@ -32,15 +32,16 @@ const User = mongoose.model('User', new mongoose.Schema({
 
 const Job = mongoose.model('Job', new mongoose.Schema({
     businessName: { type: String, required: true },
-    jobDescription: { type: String }, 
+    jobDescription: { type: String },
     category: { type: String, required: true },
     shift: {
         type: { type: String, enum: ['morning', 'midday', 'night', 'custom'], required: true },
-        date: { type: Date }, 
+        date: { type: Date },
         startTime: { type: String, required: true },
         endTime: { type: String, required: true }
     },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    status: { type: String, enum: ['pending', 'claimed', 'removed'], default: 'pending' },
     claimedBy: { type: String },
     claimedAt: { type: Date }
 }));
@@ -64,11 +65,11 @@ function authenticateToken(req, res, next) {
     const token = req.headers['authorization']?.split(' ')[1];
     if (!token) return res.sendStatus(401);
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) return res.sendStatus(403);
-        req.user = user;
+        req.user = decoded;  
         next();
-    });
+    });    
 }
 
 // TextBelt API key
@@ -126,7 +127,7 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({ token });
     } catch (error) {
         res.status(500).json({ message: 'Error logging in', error });
@@ -138,7 +139,7 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
 
     try {
         // Step 1: Find the user by the username from the token
-        const user = await User.findOne({ username: req.user.username });
+        const user = await User.findById(req.user.id);
 
         if (!user || user.phoneNumbers.length === 0) {
             return res.status(404).json({ message: 'No phone numbers found for this user.' });
@@ -172,8 +173,8 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
         const savedJob = await job.save();
 
         // Step 6: Update the user document to add the job reference
-        user.jobs.push(savedJob._id); // Add the job's ObjectId to the user's jobs array
-        await user.save(); // Save the updated user document
+        user.jobs.push(savedJob._id);
+        await user.save();
 
         // Step 7: Prepare and send SMS notifications
         const shiftTime = shift.type === 'custom'
@@ -216,13 +217,13 @@ app.get('/api/getJob/:id', authenticateToken, async (req, res) => {
 
 
 app.get('/api/getPhoneNumbers', authenticateToken, async (req, res) => {
-    const user = await User.findOne({ username: req.user.username });
+    const user = await User.findById(req.user.id);
     res.json(user.phoneNumbers);
 });
 
 app.post('/api/addPhoneNumber', authenticateToken, async (req, res) => {
     const { name, number, category } = req.body;
-    const user = await User.findOne({ username: req.user.username });
+    const user = await User.findById(req.user.id);
 
     user.phoneNumbers.push({ name, number, category });
     await user.save();
@@ -231,7 +232,7 @@ app.post('/api/addPhoneNumber', authenticateToken, async (req, res) => {
 
 app.post('/api/deletePhoneNumber', authenticateToken, async (req, res) => {
     const { number } = req.body;
-    const user = await User.findOne({ username: req.user.username });
+    const user = await User.findById(req.user.id);
 
     user.phoneNumbers = user.phoneNumbers.filter(pn => pn.number !== number);
     await user.save();
@@ -240,7 +241,7 @@ app.post('/api/deletePhoneNumber', authenticateToken, async (req, res) => {
 
 app.get('/api/getUserInfo', authenticateToken, async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.user.username });
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -339,7 +340,7 @@ app.post('/api/updateUserPreferences', authenticateToken, async (req, res) => {
     const { shiftTimes } = req.body;
 
     try {
-        const user = await User.findOne({ username: req.user.username });
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -360,7 +361,7 @@ app.post('/api/addCategory', authenticateToken, async (req, res) => {
     const { categoryName } = req.body;
 
     try {
-        const user = await User.findOne({ username: req.user.username });
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -382,7 +383,7 @@ app.post('/api/addCategory', authenticateToken, async (req, res) => {
 
 app.get('/api/getCategories', authenticateToken, async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.user.username });
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -398,7 +399,7 @@ app.post('/api/updateUsernamePassword', authenticateToken, async (req, res) => {
     const { newUsername, newPassword } = req.body;
 
     try {
-        const user = await User.findOne({ username: req.user.username });
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -430,7 +431,7 @@ function sendPushNotification(username, message) {
 // Get user preferences
 app.get('/api/getUserPreferences', authenticateToken, async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.user.username });
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }

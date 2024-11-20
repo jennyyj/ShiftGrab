@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Update selectedShiftOption when a shift is selected
-    const shiftDropdown = document.getElementById('shift-selector'); // Adjust the selector to match your dropdown ID
+    const shiftDropdown = document.getElementById('shift-selector'); 
     if (shiftDropdown) {
         shiftDropdown.addEventListener('change', (event) => {
             window.selectedShiftOption = event.target.value;
@@ -75,6 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('recent-shift')) {
         fetchRecentShift();
     }
+    
+    document.querySelector('#all-shifts-btn').addEventListener('click', () => fetchPastShifts('all'));
+    document.querySelector('#removed-shifts-btn').addEventListener('click', () => fetchPastShifts('removed'));
+    document.querySelector('#claimed-shifts-btn').addEventListener('click', () => fetchPastShifts('claimed'));
+    document.querySelector('#unclaimed-shifts-btn').addEventListener('click', () => fetchPastShifts('unclaimed'));
 });
 
 // Handle job posting
@@ -171,6 +176,7 @@ async function fetchRecentShift() {
     const jobId = localStorage.getItem('lastPostedJobId');
 
     if (!token || !jobId) {
+        console.error("Job ID or token not found in local storage");
         document.getElementById('recent-shift').innerHTML = "No recent shift found.";
         return;
     }
