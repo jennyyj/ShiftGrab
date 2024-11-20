@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -9,7 +10,6 @@ require('dotenv').config();
 
 const app = express();
 
-// Express and middleware setup
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -44,6 +44,7 @@ const Job = mongoose.model('Job', new mongoose.Schema({
     claimedBy: { type: String },
     claimedAt: { type: Date }
 }));
+
 
 // Connect to MongoDB and start the server
 mongoose.connect(uri)
@@ -87,63 +88,6 @@ app.get('/post-job', (req, res) => {
 app.get('/claimShift', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'claimShift.html'));
 });
-
-// API Router Setup
-const router = express.Router();
-
-// Get the most recent shift
-router.get('/getRecentShift', authenticateToken, async (req, res) => {
-    try {
-        const recentShift = await Job.findOne({ user: req.user._id }).sort({ 'shift.date': -1 });
-        if (!recentShift) {
-            return res.status(404).json({ message: 'No recent shift found' });
-        }
-        res.status(200).json(recentShift);
-    } catch (error) {
-        console.error('Error fetching recent shift:', error);
-        res.status(500).json({ message: 'Error fetching recent shift' });
-    }
-});
-
-// Update the status of a shift
-router.post('/updateShiftStatus', authenticateToken, async (req, res) => {
-    const { shiftId, status } = req.body;
-    try {
-        const shift = await Job.findById(shiftId);
-        if (!shift) {
-            return res.status(404).json({ message: 'Shift not found' });
-        }
-        shift.status = status;
-        await shift.save();
-        res.status(200).json({ message: 'Shift status updated successfully', shift });
-    } catch (error) {
-        console.error('Error updating shift status:', error);
-        res.status(500).json({ message: 'Error updating shift status' });
-    }
-});
-
-// Get past shifts based on filter
-router.get('/getPastShifts', authenticateToken, async (req, res) => {
-    const { filter } = req.query;
-    try {
-        let query = { user: req.user._id };
-        if (filter === 'claimed') {
-            query.status = 'claimed';
-        } else if (filter === 'unclaimed') {
-            query.status = 'unclaimed';
-        } else if (filter === 'removed') {
-            query.status = 'removed';
-        }
-        const pastShifts = await Job.find(query).sort({ 'shift.date': -1 });
-        res.status(200).json(pastShifts);
-    } catch (error) {
-        console.error('Error fetching past shifts:', error);
-        res.status(500).json({ message: 'Error fetching past shifts' });
-    }
-});
-
-// Attach router to the main Express app
-app.use('/api', router);
 
 // TextBelt API key
 const TEXTBELT_API_KEY = process.env.TEXTBELT_API_KEY;
