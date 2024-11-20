@@ -62,6 +62,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Handle job posting
+document.addEventListener('DOMContentLoaded', () => {
+    // Ensure the form element is loaded before adding an event listener
+    const postJobForm = document.getElementById('post-job-form');
+    if (postJobForm) {
+        postJobForm.addEventListener('submit', handleJobPost);
+    } else {
+        console.error('Post Job Form element not found');
+    }
+});
+
+// Adjust fetch function to validate response properly
 async function handleJobPost(e) {
     e.preventDefault();
 
@@ -76,23 +87,38 @@ async function handleJobPost(e) {
             return;
         }
 
-        // Get other form data
-        const businessName = document.getElementById('business-name').value.trim();
-        const jobDescription = document.getElementById('job-description').value.trim() || '';
-        const category = document.getElementById('category-select').value.trim();
-
+        // Get category
+        const categoryElement = document.getElementById("category-select");
+        const category = categoryElement ? categoryElement.value.trim() : '';
         if (!category) {
-            alert('Please select a category.');
+            alert("Please select a category.");
             postShiftButton.disabled = false;
             return;
         }
 
+        // Verify shift data
         if (!window.selectedShiftOption || !window.selectedShiftData) {
-            alert('Please select a shift type and time.');
+            alert("Please select a shift type and time.");
             postShiftButton.disabled = false;
             return;
         }
 
+        // Additional validation for custom shifts
+        if (window.selectedShiftOption === 'custom') {
+            if (!window.selectedShiftData.startTime || !window.selectedShiftData.endTime) {
+                alert("Please select both start and end times for custom shift.");
+                postShiftButton.disabled = false;
+                return;
+            }
+        }
+
+        // Get other form data
+        const businessNameElement = document.getElementById('business-name');
+        const jobDescriptionElement = document.getElementById('job-description');
+        const businessName = businessNameElement ? businessNameElement.value.trim() : '';
+        const jobDescription = jobDescriptionElement ? jobDescriptionElement.value.trim() : '';
+
+        // Prepare the job data
         const job = {
             businessName,
             jobDescription,
@@ -104,6 +130,8 @@ async function handleJobPost(e) {
                 endTime: window.selectedShiftData.endTime
             }
         };
+
+        console.log('Submitting job:', job); // Debug log
 
         const response = await fetch('https://shift-grab.vercel.app/api/postJob', {
             method: 'POST',
@@ -132,7 +160,6 @@ async function handleJobPost(e) {
         postShiftButton.disabled = false;
     }
 }
-
 // Reset form fields
 function resetForm() {
     const businessNameElement = document.getElementById('business-name');
