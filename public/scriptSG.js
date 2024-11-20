@@ -119,6 +119,7 @@ async function handleJobPost(e) {
         };
 
         console.log('Submitting job:', job); // Debug log
+        console.log(`Job ID to fetch: ${jobId}`);
 
         const response = await fetch('https://shift-grab.vercel.app/api/postJob', {
             method: 'POST',
@@ -132,10 +133,11 @@ async function handleJobPost(e) {
         const result = await response.json();
         if (response.ok) {
             alert("Job posted successfully!");
-            resetForm();
+            localStorage.setItem('lastPostedJobId', result.job._id);  // Store the job ID in localStorage
+            window.location.href = 'shiftstatus.html';  // Redirect to shift status page
         } else {
             alert(result.message || "Error posting job.");
-        }
+        }        
     } catch (error) {
         console.error("Error posting job:", error);
         alert("Error posting job.");

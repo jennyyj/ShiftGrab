@@ -209,6 +209,19 @@ app.get('/api/getJobs', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/api/getJob/:id', authenticateToken, async (req, res) => {
+    try {
+        const job = await Job.findOne({ _id: req.params.id, user: req.user._id });
+        if (!job) {
+            return res.status(404).json({ message: 'Job not found' });
+        }
+        res.status(200).json(job);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching job', error });
+    }
+});
+
+
 app.get('/api/getPhoneNumbers', authenticateToken, async (req, res) => {
     const user = await User.findOne({ username: req.user.username });
     res.json(user.phoneNumbers);
