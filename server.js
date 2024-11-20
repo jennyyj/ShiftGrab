@@ -151,18 +151,20 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
     const { businessName, jobDescription, shift, category } = req.body;
 
     try {
+        // Step 1: Find the user by the username from the token
         const user = await User.findOne({ username: req.user.username });
 
         if (!user || user.phoneNumbers.length === 0) {
             return res.status(404).json({ message: 'No phone numbers found for this user.' });
         }
 
-        // Check if shift data is complete
+        // Step 2: Validate shift data
         if (!shift || !shift.type || !shift.startTime || !shift.endTime) {
             console.error('Error: Incomplete shift data:', shift);
             return res.status(400).json({ message: 'Incomplete shift data. Ensure all shift fields are provided.' });
         }
 
+        // Step 3: Filter phone numbers based on the category
         const relevantNumbers = category === 'everyone'
             ? user.phoneNumbers
             : user.phoneNumbers.filter(pn => pn.category === category);
@@ -171,6 +173,7 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: `No phone numbers found for category: ${category}.` });
         }
 
+        // Step 4: Create a new job
         const job = new Job({
             businessName,
             jobDescription: jobDescription || 'No description provided',
@@ -179,8 +182,14 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
             user: user._id,
         });
 
+        // Step 5: Save the job to the database
         const savedJob = await job.save();
 
+        // Step 6: Update the user document to add the job reference
+        user.jobs.push(savedJob._id); // Add the job's ObjectId to the user's jobs array
+        await user.save(); // Save the updated user document
+
+        // Step 7: Prepare and send SMS notifications
         const shiftTime = shift.type === 'custom'
             ? `on ${new Date(shift.date).toLocaleDateString()} from ${shift.startTime} to ${shift.endTime}`
             : `${shift.type} shift (${shift.startTime} - ${shift.endTime})`;
@@ -189,12 +198,14 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
         const smsPromises = relevantNumbers.map(({ number }) => sendTextBeltSMS(number, message));
         await Promise.all(smsPromises);
 
+        // Step 8: Send a response to the client
         res.status(201).json({ message: 'Job posted and SMS sent successfully!', job: savedJob });
     } catch (error) {
         console.error('Error posting job:', error);
         res.status(500).json({ message: 'Error posting job or sending SMS.' });
     }
 });
+
 
 app.get('/api/getJobs', authenticateToken, async (req, res) => {
     try {
