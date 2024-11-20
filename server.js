@@ -71,20 +71,6 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// Add the Missing API Endpoint for getRecentShift
-app.get('/api/getRecentShift', authenticateToken, async (req, res) => {
-    try {
-        const recentShift = await Job.findOne({ user: req.user._id }).sort({ 'shift.date': -1 });
-        if (!recentShift) {
-            return res.status(404).json({ message: 'No recent shift found' });
-        }
-        res.status(200).json(recentShift);
-    } catch (error) {
-        console.error('Error fetching recent shift:', error);
-        res.status(500).json({ message: 'Internal server error while fetching recent shift' });
-    }
-});
-
 // TextBelt API key
 const TEXTBELT_API_KEY = process.env.TEXTBELT_API_KEY;
 
@@ -266,6 +252,43 @@ app.get('/api/getUserInfo', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Error fetching user info', error });
     }
 });
+
+// shift status page
+app.get('/api/getRecentShift', authenticateToken, async (req, res) => {
+    try {
+        // Fetch the most recent job created by the user
+        const recentShift = await Job.findOne({ user: req.user._id }).sort({ 'shift.date': -1 });
+        if (!recentShift) {
+            return res.status(404).json({ message: 'No recent shift found' });
+        }
+        res.status(200).json(recentShift);
+    } catch (error) {
+        console.error('Error fetching recent shift:', error);
+        res.status(500).json({ message: 'Internal server error while fetching recent shift' });
+    }
+});
+
+app.get('/api/getPastShifts', authenticateToken, async (req, res) => {
+    const filter = req.query.filter;
+
+    let query = { user: req.user._id };
+    if (filter === 'removed') {
+        query['shift.status'] = 'removed';
+    } else if (filter === 'claimed') {
+        query['shift.status'] = 'claimed';
+    } else if (filter === 'unclaimed') {
+        query['claimedBy'] = { $exists: false };
+    }
+
+    try {
+        const shifts = await Job.find(query);
+        res.status(200).json(shifts);
+    } catch (error) {
+        console.error('Error fetching past shifts:', error);
+        res.status(500).json({ message: 'Error fetching past shifts' });
+    }
+});
+
 
 // Claim Shift Route
 app.post('/api/claimShift', async (req, res) => {

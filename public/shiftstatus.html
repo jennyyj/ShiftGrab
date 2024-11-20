@@ -274,35 +274,45 @@
         }
     
         // Fetch and display past shifts based on filter
-        async function fetchPastShifts(filter) {
-            console.log(`Fetching past shifts with filter: ${filter}`);
-            try {
-                const response = await fetch(`https://shift-grab.vercel.app/api/getPastShifts?filter=${filter}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const shifts = await response.json();
-        
-                if (response.ok) {
-                    console.log("Successfully fetched past shifts:", shifts);
-                    pastShiftContainer.innerHTML = shifts.map(shift => `
-                        <div class="past-shift">
-                            <p><strong>Business:</strong> ${shift.businessName}</p>
-                            <p><strong>Date/Time:</strong> ${new Date(shift.shift.date).toLocaleString()}</p>
-                            <p><strong>Category:</strong> ${shift.category}</p>
-                            <p><strong>Status:</strong> ${shift.status}</p>
-                        </div>
-                    `).join('');
-                } else {
-                    console.error("Failed to fetch past shifts:", shifts.message);
-                }
-            } catch (error) {
-                console.error('Error fetching past shifts:', error);
+        // Fetch and display past shifts based on filter
+async function fetchPastShifts(filter) {
+    console.log(`Fetching past shifts with filter: ${filter}`);
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.error('No valid token found');
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://shift-grab.vercel.app/api/getPastShifts?filter=${filter}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
+        });
+        
+        const shifts = await response.json();
+        
+        if (response.ok) {
+            console.log("Successfully fetched past shifts:", shifts);
+            const pastShiftContainer = document.querySelector('#past-shift-info');
+            pastShiftContainer.innerHTML = shifts.map(shift => `
+                <div class="past-shift">
+                    <p><strong>Business:</strong> ${shift.businessName}</p>
+                    <p><strong>Date/Time:</strong> ${new Date(shift.shift.date).toLocaleString()}</p>
+                    <p><strong>Category:</strong> ${shift.category}</p>
+                    <p><strong>Status:</strong> ${shift.status}</p>
+                </div>
+            `).join('');
+        } else {
+            console.error("Failed to fetch past shifts:", shifts.message);
         }
+    } catch (error) {
+        console.error('Error fetching past shifts:', error);
+    }
+}
+
     
         // Event listeners for past shift filters
         document.querySelector('#all-shifts-btn').addEventListener('click', () => fetchPastShifts('all'));
