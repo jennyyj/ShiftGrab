@@ -119,7 +119,6 @@ async function handleJobPost(e) {
         };
 
         console.log('Submitting job:', job); // Debug log
-        console.log(`Job ID to fetch: ${jobId}`);
 
         const response = await fetch('https://shift-grab.vercel.app/api/postJob', {
             method: 'POST',
@@ -133,7 +132,9 @@ async function handleJobPost(e) {
         const result = await response.json();
         if (response.ok) {
             alert("Job posted successfully!");
-            localStorage.setItem('lastPostedJobId', result.job._id);  // Store the job ID in localStorage
+            const jobId = result.job._id; // This line ensures jobId is defined correctly
+            console.log(`Job ID to fetch: ${jobId}`); // Now jobId is properly defined
+            localStorage.setItem('lastPostedJobId', jobId);  // Store the job ID
             window.location.href = 'shiftstatus.html';  // Redirect to shift status page
         } else {
             alert(result.message || "Error posting job.");
@@ -145,6 +146,7 @@ async function handleJobPost(e) {
         postShiftButton.disabled = false;
     }
 }
+
 // Reset form fields
 function resetForm() {
     const businessNameElement = document.getElementById('business-name');
@@ -193,10 +195,11 @@ async function loadCategories() {
         return;
     }
 
+    // Get the element that will display the categories
     const categoryList = document.getElementById('category-list');
     if (!categoryList) {
-        console.error("Category list element not found");
-        return;
+        console.error("Category list element not found. Make sure the HTML has the element with ID 'category-list'.");
+        return;  // Add this return to prevent further execution if the element is not found
     }
 
     try {
@@ -209,7 +212,7 @@ async function loadCategories() {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to fetch categories');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const categories = await response.json();
@@ -224,10 +227,8 @@ async function loadCategories() {
     }
 }
 
-// Add this to load existing preferences when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    loadCategories();
-});
+// Add this to ensure `loadCategories()` runs after DOM is loaded
+document.addEventListener('DOMContentLoaded', loadCategories);
 
 // Fetch and display jobs
 function fetchJobs() {

@@ -396,3 +396,18 @@ function sendPushNotification(username, message) {
     // Placeholder function - integrate a push notification service like Firebase later
     console.log(`Push notification sent to ${username}: ${message}`);
 }
+
+// Get user preferences
+app.get('/api/getUserPreferences', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.user.username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json(user.preferences || {});
+    } catch (error) {
+        console.error('Error fetching user preferences:', error);
+        res.status(500).json({ message: 'Error fetching user preferences', error });
+    }
+});
