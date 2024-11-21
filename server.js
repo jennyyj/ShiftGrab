@@ -203,18 +203,30 @@ app.get('/api/getJobs', authenticateToken, async (req, res) => {
     }
 });
 
+const mongoose = require('mongoose');
+
 app.get('/api/getJob/:id', authenticateToken, async (req, res) => {
     try {
-        const job = await Job.findOne({ _id: req.params.id, user: req.user._id });
+        // Convert job ID and user ID to ObjectId
+        const jobId = new mongoose.Types.ObjectId(req.params.id);
+        const userId = mongoose.Types.ObjectId(req.user._id); // No need for `new` keyword here
+
+        console.log('Fetching job with ID:', jobId, 'for user ID:', userId); // Log for debugging
+
+        // Update query to ensure IDs are ObjectId
+        const job = await Job.findOne({ _id: jobId, user: userId });
+
         if (!job) {
+            console.log('Job not found for user:', userId, 'with job ID:', jobId);
             return res.status(404).json({ message: 'Job not found' });
         }
+
         res.status(200).json(job);
     } catch (error) {
+        console.error('Error fetching job:', error);
         res.status(500).json({ message: 'Error fetching job', error });
     }
 });
-
 
 app.get('/api/getPhoneNumbers', authenticateToken, async (req, res) => {
     const user = await User.findById(req.user.id);
@@ -257,11 +269,16 @@ app.get('/api/getUserInfo', authenticateToken, async (req, res) => {
 // shift status page
 app.get('/api/getRecentShift', authenticateToken, async (req, res) => {
     try {
+        const userId = mongoose.Types.ObjectId(req.user._id); 
+
         // Fetch the most recent job created by the user
-        const recentShift = await Job.findOne({ user: req.user._id }).sort({ 'shift.date': -1 });
+        const recentShift = await Job.findOne({ user: userId }).sort({ 'shift.date': -1 });
+
         if (!recentShift) {
+            console.log('No recent shift found for user:', req.user.username);
             return res.status(404).json({ message: 'No recent shift found' });
         }
+
         res.status(200).json(recentShift);
     } catch (error) {
         console.error('Error fetching recent shift:', error);
