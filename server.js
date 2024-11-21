@@ -203,8 +203,6 @@ app.get('/api/getJobs', authenticateToken, async (req, res) => {
     }
 });
 
-const mongoose = require('mongoose');
-
 app.get('/api/getJob/:id', authenticateToken, async (req, res) => {
     try {
         // Convert job ID and user ID to ObjectId
