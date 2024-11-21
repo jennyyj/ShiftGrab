@@ -75,28 +75,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('recent-shift')) {
         fetchRecentShift();
     }
-    
+    // Attach event listeners for past shift filter buttons
     const allShiftsBtn = document.querySelector('#all-shifts-btn');
-    if (allShiftsBtn) {
-        allShiftsBtn.addEventListener('click', () => fetchPastShifts('all'));
-    }
-
     const removedShiftsBtn = document.querySelector('#removed-shifts-btn');
-    if (removedShiftsBtn) {
-        removedShiftsBtn.addEventListener('click', () => fetchPastShifts('removed'));
-    }
-
     const claimedShiftsBtn = document.querySelector('#claimed-shifts-btn');
-    if (claimedShiftsBtn) {
-        claimedShiftsBtn.addEventListener('click', () => fetchPastShifts('claimed'));
-    }
-
     const unclaimedShiftsBtn = document.querySelector('#unclaimed-shifts-btn');
-    if (unclaimedShiftsBtn) {
-        unclaimedShiftsBtn.addEventListener('click', () => fetchPastShifts('unclaimed'));
+
+    if (allShiftsBtn && removedShiftsBtn && claimedShiftsBtn && unclaimedShiftsBtn) {
+        allShiftsBtn.addEventListener('click', () => {
+            console.log('All shifts button clicked');
+            fetchPastShifts('all');
+        });
+
+        removedShiftsBtn.addEventListener('click', () => {
+            console.log('Removed shifts button clicked');
+            fetchPastShifts('removed');
+        });
+
+        claimedShiftsBtn.addEventListener('click', () => {
+            console.log('Claimed shifts button clicked');
+            fetchPastShifts('claimed');
+        });
+
+        unclaimedShiftsBtn.addEventListener('click', () => {
+            console.log('Not claimed shifts button clicked');
+            fetchPastShifts('unclaimed');
+        });
+    } else {
+        console.error('One or more shift filter buttons not found.');
     }
 });
-
 // Handle job posting
 async function handleJobPost(e) {
     e.preventDefault();
@@ -211,7 +219,8 @@ async function fetchRecentShift() {
         });
 
         if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${await response.text()}`);
+            const errorText = await response.text();
+            throw new Error(`Error: ${response.status} - ${errorText}`);
         }
 
         const job = await response.json();
@@ -229,7 +238,9 @@ async function fetchRecentShift() {
     }
 }
 
+// Fetch and display past shifts based on filter
 async function fetchPastShifts(filter) {
+    console.log(`Fetching past shifts with filter: ${filter}`);
     const token = localStorage.getItem('token');
     if (!token) {
         console.error("Token not found in local storage");
@@ -246,31 +257,32 @@ async function fetchPastShifts(filter) {
             }
         });
 
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${await response.text()}`);
-        }
-
         const shifts = await response.json();
-        console.log('Successfully fetched past shifts:', shifts);
-        
-        // Assuming you have an element to display the shift details
-        const shiftListElement = document.getElementById('past-shift-list');
-        if (shiftListElement) {
-            shiftListElement.innerHTML = shifts.length === 0
-                ? '<p>No shifts found for this category.</p>'
-                : shifts.map(shift => `
-                    <div class="shift-item">
-                        <strong>Business:</strong> ${shift.businessName} <br>
-                        <strong>Description:</strong> ${shift.jobDescription} <br>
-                        <strong>Date:</strong> ${new Date(shift.shift.date).toLocaleDateString()} <br>
-                        <strong>Time:</strong> ${shift.shift.startTime} - ${shift.shift.endTime} <br>
-                        <strong>Status:</strong> ${shift.status}
+
+        if (response.ok) {
+            console.log("Successfully fetched past shifts:", shifts);
+            const pastShiftContainer = document.querySelector('#past-shift-info');
+            if (pastShiftContainer) {
+                // Clear previous content
+                pastShiftContainer.innerHTML = '';
+                
+                // Map through shifts to create HTML elements
+                pastShiftContainer.innerHTML = shifts.map(shift => `
+                    <div class="past-shift">
+                        <p><strong>Business:</strong> ${shift.businessName}</p>
+                        <p><strong>Date/Time:</strong> ${new Date(shift.shift.date).toLocaleString()}</p>
+                        <p><strong>Category:</strong> ${shift.category}</p>
+                        <p><strong>Status:</strong> ${shift.status}</p>
                     </div>
                 `).join('');
+            } else {
+                console.error('Past shift container not found.');
+            }
+        } else {
+            console.error("Failed to fetch past shifts:", shifts.message);
         }
     } catch (error) {
-        console.error("Error fetching past shifts:", error);
-        alert("Error fetching past shifts. Please try again later.");
+        console.error('Error fetching past shifts:', error);
     }
 }
 
