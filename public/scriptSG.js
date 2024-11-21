@@ -269,10 +269,7 @@ async function fetchPastShifts(filter) {
             if (pastShiftContainer) {
                 // Clear previous content
                 pastShiftContainer.innerHTML = '';
-                
-                if (shifts.length === 0) {
-                    pastShiftContainer.innerHTML = '<p>No past shifts found.</p>';
-                } else {
+            
                 // Map through shifts to create HTML elements
                 pastShiftContainer.innerHTML = shifts.map(shift => `
                     <div class="past-shift">
