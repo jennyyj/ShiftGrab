@@ -76,10 +76,25 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchRecentShift();
     }
     
-    document.querySelector('#all-shifts-btn').addEventListener('click', () => fetchPastShifts('all'));
-    document.querySelector('#removed-shifts-btn').addEventListener('click', () => fetchPastShifts('removed'));
-    document.querySelector('#claimed-shifts-btn').addEventListener('click', () => fetchPastShifts('claimed'));
-    document.querySelector('#unclaimed-shifts-btn').addEventListener('click', () => fetchPastShifts('unclaimed'));
+    const allShiftsBtn = document.querySelector('#all-shifts-btn');
+    if (allShiftsBtn) {
+        allShiftsBtn.addEventListener('click', () => fetchPastShifts('all'));
+    }
+
+    const removedShiftsBtn = document.querySelector('#removed-shifts-btn');
+    if (removedShiftsBtn) {
+        removedShiftsBtn.addEventListener('click', () => fetchPastShifts('removed'));
+    }
+
+    const claimedShiftsBtn = document.querySelector('#claimed-shifts-btn');
+    if (claimedShiftsBtn) {
+        claimedShiftsBtn.addEventListener('click', () => fetchPastShifts('claimed'));
+    }
+
+    const unclaimedShiftsBtn = document.querySelector('#unclaimed-shifts-btn');
+    if (unclaimedShiftsBtn) {
+        unclaimedShiftsBtn.addEventListener('click', () => fetchPastShifts('unclaimed'));
+    }
 });
 
 // Handle job posting
@@ -175,8 +190,14 @@ async function fetchRecentShift() {
     const token = localStorage.getItem('token');
     const jobId = localStorage.getItem('lastPostedJobId');
 
-    if (!token || !jobId) {
-        console.error("Job ID or token not found in local storage");
+    if (!token) {
+        console.error("Token not found in local storage");
+        document.getElementById('recent-shift').innerHTML = "You must be logged in to view recent shifts.";
+        return;
+    }
+
+    if (!jobId) {
+        console.error("Job ID not found in local storage");
         document.getElementById('recent-shift').innerHTML = "No recent shift found.";
         return;
     }
@@ -190,8 +211,7 @@ async function fetchRecentShift() {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Error: ${response.status} - ${errorText}`);
+            throw new Error(`Error: ${response.status} - ${await response.text()}`);
         }
 
         const job = await response.json();
@@ -206,6 +226,51 @@ async function fetchRecentShift() {
     } catch (error) {
         console.error('Error fetching shift details:', error);
         document.getElementById('recent-shift').innerHTML = 'Error fetching recent shift details. Please check your connection and try again.';
+    }
+}
+
+async function fetchPastShifts(filter) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.error("Token not found in local storage");
+        alert("You must be logged in to view past shifts.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://shift-grab.vercel.app/api/getPastShifts?filter=${filter}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${await response.text()}`);
+        }
+
+        const shifts = await response.json();
+        console.log('Successfully fetched past shifts:', shifts);
+        
+        // Assuming you have an element to display the shift details
+        const shiftListElement = document.getElementById('past-shift-list');
+        if (shiftListElement) {
+            shiftListElement.innerHTML = shifts.length === 0
+                ? '<p>No shifts found for this category.</p>'
+                : shifts.map(shift => `
+                    <div class="shift-item">
+                        <strong>Business:</strong> ${shift.businessName} <br>
+                        <strong>Description:</strong> ${shift.jobDescription} <br>
+                        <strong>Date:</strong> ${new Date(shift.shift.date).toLocaleDateString()} <br>
+                        <strong>Time:</strong> ${shift.shift.startTime} - ${shift.shift.endTime} <br>
+                        <strong>Status:</strong> ${shift.status}
+                    </div>
+                `).join('');
+        }
+    } catch (error) {
+        console.error("Error fetching past shifts:", error);
+        alert("Error fetching past shifts. Please try again later.");
     }
 }
 

@@ -11,7 +11,6 @@ require('dotenv').config();
 const app = express();
 
 app.use(express.json());
-app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 app.options('*', cors());
@@ -289,12 +288,13 @@ app.get('/api/getPastShifts', authenticateToken, async (req, res) => {
 
     let query = { user: req.user._id };
     if (filter === 'removed') {
-        query['shift.status'] = 'removed';
+    query['status'] = 'removed';
     } else if (filter === 'claimed') {
-        query['shift.status'] = 'claimed';
+    query['status'] = 'claimed';
     } else if (filter === 'unclaimed') {
-        query['claimedBy'] = { $exists: false };
+    query['claimedBy'] = { $exists: false };
     }
+
 
     try {
         const shifts = await Job.find(query);
@@ -302,6 +302,24 @@ app.get('/api/getPastShifts', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error fetching past shifts:', error);
         res.status(500).json({ message: 'Error fetching past shifts' });
+    }
+});
+
+app.post('/api/updateShiftStatus', authenticateToken, async (req, res) => {
+    const { shiftId, status } = req.body;
+
+    try {
+        const job = await Job.findById(shiftId);
+        if (!job) {
+            return res.status(404).json({ message: 'Shift not found' });
+        }
+
+        job.status = status;
+        await job.save();
+        res.status(200).json({ message: 'Shift status updated successfully' });
+    } catch (error) {
+        console.error('Error updating shift status:', error);
+        res.status(500).json({ message: 'Error updating shift status' });
     }
 });
 
