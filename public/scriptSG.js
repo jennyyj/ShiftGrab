@@ -265,7 +265,7 @@ async function fetchPastShifts(filter) {
 
         if (response.ok) {
             console.log("Successfully fetched past shifts:", shifts);
-            const pastShiftContainer = document.querySelector('#shift-list-container');
+            const pastShiftContainer = document.querySelector('#past-shifts-container');
             if (pastShiftContainer) {
                 // Clear previous content
                 pastShiftContainer.innerHTML = '';
