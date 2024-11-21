@@ -104,6 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('One or more shift filter buttons not found.');
     }
+    if (document.getElementById('recent-shift')) {
+        fetchRecentShift();
+    }
 });
 // Handle job posting
 async function handleJobPost(e) {
@@ -261,7 +264,7 @@ async function fetchPastShifts(filter) {
 
         if (response.ok) {
             console.log("Successfully fetched past shifts:", shifts);
-            const pastShiftContainer = document.querySelector('#past-shift-info');
+            const pastShiftContainer = document.querySelector('#past-shifts-container');
             if (pastShiftContainer) {
                 // Clear previous content
                 pastShiftContainer.innerHTML = '';
