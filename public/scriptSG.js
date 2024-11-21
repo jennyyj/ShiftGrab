@@ -261,6 +261,7 @@ async function fetchPastShifts(filter) {
         });
 
         const shifts = await response.json();
+        console.log("Shifts data received:", shifts);
 
         if (response.ok) {
             console.log("Successfully fetched past shifts:", shifts);
