@@ -260,6 +260,11 @@ async function fetchPastShifts(filter) {
             }
         });
 
+        if (!response.ok) {
+            console.error('Failed to fetch past shifts:', response.status, response.statusText);
+            return; 
+        }
+
         const shifts = await response.json();
         console.log("Shifts data received:", shifts);
 
