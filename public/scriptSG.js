@@ -45,255 +45,154 @@ async function fetchUserInfo() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Ensure the form element is loaded before adding an event listener
-    const postJobForm = document.getElementById('post-job-form');
-    if (postJobForm) {
-        postJobForm.addEventListener('submit', handleJobPost);
-    } else {
-        console.error('Post Job Form element not found');
-    }
+    // Constants for DOM Elements
+    const recentShiftElement = document.getElementById('recent-shift');
+    const pastShiftsContainer = document.getElementById('past-shifts-container');
+    const allShiftsBtn = document.getElementById('all-shifts-btn');
+    const removedShiftsBtn = document.getElementById('removed-shifts-btn');
+    const claimedShiftsBtn = document.getElementById('claimed-shifts-btn');
+    const unclaimedShiftsBtn = document.getElementById('unclaimed-shifts-btn');
 
-    // Update selectedShiftOption when a shift is selected
-    const shiftDropdown = document.getElementById('shift-selector'); 
-    if (shiftDropdown) {
-        shiftDropdown.addEventListener('change', (event) => {
-            window.selectedShiftOption = event.target.value;
-            console.log(`Shift type selected: ${window.selectedShiftOption}`);
-        });
-    } else {
-        console.error('Shift dropdown not found');
-    }
-
-    // Fetch user info once DOM is loaded
-    console.log('DOM loaded, fetching user info...');
-    fetchUserInfo();
-
-    // Load categories
-    loadCategories();
-
-    // Fetch recent shift for shift status page
-    if (document.getElementById('recent-shift')) {
-        fetchRecentShift();
-    }
-    // Attach event listeners for past shift filter buttons
-    const allShiftsBtn = document.querySelector('#all-shifts-btn');
-    const removedShiftsBtn = document.querySelector('#removed-shifts-btn');
-    const claimedShiftsBtn = document.querySelector('#claimed-shifts-btn');
-    const unclaimedShiftsBtn = document.querySelector('#unclaimed-shifts-btn');
-
-    if (allShiftsBtn && removedShiftsBtn && claimedShiftsBtn && unclaimedShiftsBtn) {
-        allShiftsBtn.addEventListener('click', () => {
-            console.log('All shifts button clicked');
-            fetchPastShifts('all');
-        });
-
-        removedShiftsBtn.addEventListener('click', () => {
-            console.log('Removed shifts button clicked');
-            fetchPastShifts('removed');
-        });
-
-        claimedShiftsBtn.addEventListener('click', () => {
-            console.log('Claimed shifts button clicked');
-            fetchPastShifts('claimed');
-        });
-
-        unclaimedShiftsBtn.addEventListener('click', () => {
-            console.log('Not claimed shifts button clicked');
-            fetchPastShifts('unclaimed');
-        });
-    } else {
-        console.error('One or more shift filter buttons not found.');
-    }
-    if (document.getElementById('recent-shift')) {
-        fetchRecentShift();
-    }
-});
-// Handle job posting
-async function handleJobPost(e) {
-    e.preventDefault();
-
-    const postShiftButton = document.querySelector("button[type='submit']");
-    postShiftButton.disabled = true;
-
-    try {
+    // Fetch Recent Shift
+    async function fetchRecentShift() {
         const token = localStorage.getItem('token');
+
         if (!token) {
-            alert("You must be logged in to post a job.");
-            window.location.href = "login.html";
+            recentShiftElement.innerHTML = `<p>You must be logged in to view recent shifts.</p>`;
             return;
         }
 
-        // Get category
-        const categoryElement = document.getElementById("category-select");
-        const category = categoryElement ? categoryElement.value.trim() : '';
-        if (!category) {
-            alert("Please select a category.");
-            postShiftButton.disabled = false;
+        try {
+            const response = await fetch('https://shift-grab.vercel.app/api/getRecentShift', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch recent shift.');
+
+            const job = await response.json();
+            recentShiftElement.innerHTML = `
+                <strong>Recent Shift:</strong><br>
+                <p><strong>Business:</strong> ${job.businessName}</p>
+                <p><strong>Description:</strong> ${job.jobDescription}</p>
+                <p><strong>Date:</strong> ${new Date(job.shift.date).toLocaleString()}</p>
+                <p><strong>Time:</strong> ${job.shift.startTime} - ${job.shift.endTime}</p>
+                <p><strong>Claimed By:</strong> ${job.claimedBy || 'Not yet claimed'}</p>
+            `;
+        } catch (error) {
+            console.error('Error fetching recent shift:', error);
+            recentShiftElement.innerHTML = `<p>Error fetching recent shift. Please try again.</p>`;
+        }
+    }
+
+    // Fetch Past Shifts with Filter
+    async function fetchPastShifts(filter = 'all') {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            alert('You must be logged in to view past shifts.');
             return;
         }
 
-        // Verify shift data
-        if (!window.selectedShiftOption || !window.selectedShiftData) {
-            alert("Please select a shift type and time.");
-            postShiftButton.disabled = false;
-            return;
-        }
+        try {
+            const response = await fetch(`https://shift-grab.vercel.app/api/getPastShifts?filter=${filter}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
 
-        // Additional validation for custom shifts
-        if (window.selectedShiftOption === 'custom') {
-            if (!window.selectedShiftData.startTime || !window.selectedShiftData.endTime) {
-                alert("Please select both start and end times for custom shift.");
-                postShiftButton.disabled = false;
-                return;
-            }
-        }
+            if (!response.ok) throw new Error('Failed to fetch past shifts.');
 
-        // Get other form data
-        const businessNameElement = document.getElementById('business-name');
-        const jobDescriptionElement = document.getElementById('job-description');
-        const businessName = businessNameElement ? businessNameElement.value.trim() : '';
-        const jobDescription = jobDescriptionElement ? jobDescriptionElement.value.trim() : '';
+            const shifts = await response.json();
 
-        // Prepare the job data
-        const job = {
-            businessName,
-            jobDescription,
-            category,
-            shift: {
-                type: window.selectedShiftOption,
-                date: window.selectedShiftData.date,
-                startTime: window.selectedShiftData.startTime,
-                endTime: window.selectedShiftData.endTime
-            }
-        };
-
-        console.log('Submitting job:', job); // Debug log
-
-        const response = await fetch('https://shift-grab.vercel.app/api/postJob', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify(job),
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-            alert("Job posted successfully!");
-            const jobId = result.job._id;
-            console.log(`Job ID to fetch: ${jobId}`);
-            localStorage.setItem('lastPostedJobId', jobId);  // Store the job ID in localStorage
-            window.location.href = 'shiftstatus.html';  // Redirect to shift status page
-        } else {
-            alert(result.message || "Error posting job.");
-        }
-    } catch (error) {
-        console.error('Error posting job:', error);
-        alert('Error posting job.');
-    } finally {
-        postShiftButton.disabled = false;
-    }
-}
-
-// Fetch recent shift for shift status page
-async function fetchRecentShift() {
-    const token = localStorage.getItem('token');
-    const jobId = localStorage.getItem('lastPostedJobId');
-
-    if (!token) {
-        console.error("Token not found in local storage");
-        document.getElementById('recent-shift').innerHTML = "You must be logged in to view recent shifts.";
-        return;
-    }
-
-    if (!jobId) {
-        console.error("Job ID not found in local storage");
-        document.getElementById('recent-shift').innerHTML = "No recent shift found.";
-        return;
-    }
-
-    try {
-        const response = await fetch(`https://shift-grab.vercel.app/api/getJob/${jobId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Error: ${response.status} - ${errorText}`);
-        }
-
-        const job = await response.json();
-        document.getElementById('recent-shift').innerHTML = `
-            <strong>Shift Posted:</strong><br>
-            Business: ${job.businessName}<br>
-            Description: ${job.jobDescription}<br>
-            Date: ${new Date(job.shift.date).toLocaleString()}<br>
-            Time: ${job.shift.startTime} - ${job.shift.endTime}<br>
-            Claimed By: ${job.claimedBy || 'Not yet claimed'}
-        `;
-    } catch (error) {
-        console.error('Error fetching shift details:', error);
-        document.getElementById('recent-shift').innerHTML = 'Error fetching recent shift details. Please check your connection and try again.';
-    }
-}
-
-// Fetch and display past shifts based on filter
-async function fetchPastShifts(filter) {
-    console.log(`Fetching past shifts with filter: ${filter}`);
-    const token = localStorage.getItem('token');
-    if (!token) {
-        console.error("Token not found in local storage");
-        alert("You must be logged in to view past shifts.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`https://shift-grab.vercel.app/api/getPastShifts?filter=${filter}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            console.error('Failed to fetch past shifts:', response.status, response.statusText);
-            return; 
-        }
-
-        const shifts = await response.json();
-        console.log("Shifts data received:", shifts);
-
-        if (response.ok) {
-            console.log("Successfully fetched past shifts:", shifts);
-            const pastShiftContainer = document.querySelector('#past-shifts-container');
-            if (pastShiftContainer) {
-                // Clear previous content
-                pastShiftContainer.innerHTML = '';
-            
-                // Map through shifts to create HTML elements
-                pastShiftContainer.innerHTML = shifts.map(shift => `
-                    <div class="past-shift">
-                        <p><strong>Business:</strong> ${shift.businessName}</p>
-                        <p><strong>Date/Time:</strong> ${new Date(shift.shift.date).toLocaleString()}</p>
-                        <p><strong>Category:</strong> ${shift.category}</p>
-                        <p><strong>Status:</strong> ${shift.status}</p>
-                    </div>
-                `).join('');
+            // Update DOM
+            if (shifts.length > 0) {
+                pastShiftsContainer.innerHTML = shifts
+                    .map(shift => `
+                        <div class="past-shift">
+                            <p><strong>Business:</strong> ${shift.businessName}</p>
+                            <p><strong>Date/Time:</strong> ${new Date(shift.shift.date).toLocaleString()}</p>
+                            <p><strong>Category:</strong> ${shift.category}</p>
+                            <p><strong>Status:</strong> ${shift.status}</p>
+                        </div>
+                    `)
+                    .join('');
             } else {
-                console.error('Past shift container not found.');
+                pastShiftsContainer.innerHTML = `<p>No past shifts found for the selected filter.</p>`;
             }
-        } else {
-            console.error("Failed to fetch past shifts:", shifts.message);
+        } catch (error) {
+            console.error('Error fetching past shifts:', error);
+            pastShiftsContainer.innerHTML = `<p>Error fetching past shifts. Please try again.</p>`;
         }
-    } catch (error) {
-        console.error('Error fetching past shifts:', error);
     }
-}
+
+    // Event Listeners for Filter Buttons
+    if (allShiftsBtn && removedShiftsBtn && claimedShiftsBtn && unclaimedShiftsBtn) {
+        allShiftsBtn.addEventListener('click', () => fetchPastShifts('all'));
+        removedShiftsBtn.addEventListener('click', () => fetchPastShifts('removed'));
+        claimedShiftsBtn.addEventListener('click', () => fetchPastShifts('claimed'));
+        unclaimedShiftsBtn.addEventListener('click', () => fetchPastShifts('unclaimed'));
+    } else {
+        console.error('One or more shift filter buttons are missing.');
+    }
+
+    // Initial Fetch Calls
+    if (recentShiftElement) fetchRecentShift();
+});
+
+// Validation and Submission for Post Job Form
+document.addEventListener('DOMContentLoaded', () => {
+    const postJobForm = document.getElementById('post-job-form');
+
+    if (!postJobForm) return;
+
+    postJobForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const token = localStorage.getItem('token');
+        const businessName = document.getElementById('business-name').value.trim();
+        const jobDescription = document.getElementById('job-description').value.trim();
+        const category = document.getElementById('category-select').value;
+
+        if (!businessName || !jobDescription || !category) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+
+        try {
+            const response = await fetch('https://shift-grab.vercel.app/api/postJob', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    businessName,
+                    jobDescription,
+                    category,
+                    shift: window.selectedShiftData,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Shift posted successfully!');
+                localStorage.setItem('lastPostedJobId', result.job._id);
+                window.location.href = 'shiftstatus.html';
+            } else {
+                throw new Error(result.message || 'Failed to post shift.');
+            }
+        } catch (error) {
+            console.error('Error posting job:', error);
+            alert('An error occurred while posting the shift. Please try again.');
+        }
+    });
+});
+
 
 // Reset form fields
 function resetForm() {
