@@ -8,6 +8,8 @@ const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
 
+const { User, Job } = require('./models'); // Import models from models.js
+
 const app = express();
 
 app.use(express.json());
@@ -24,31 +26,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 
 // MongoDB connection URI
 const uri = process.env.MONGODB_URI;
-
-// Mongoose Models
-const User = mongoose.model('User', new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    phoneNumbers: [{ name: String, number: String, category: String }],
-    jobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }]
-}));
-
-const Job = mongoose.model('Job', new mongoose.Schema({
-    businessName: { type: String, required: true },
-    jobDescription: { type: String },
-    category: { type: String, required: true },
-    shift: {
-        type: { type: String, enum: ['morning', 'midday', 'night', 'custom'], required: true },
-        date: { type: Date },
-        startTime: { type: String, required: true },
-        endTime: { type: String, required: true }
-    },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    status: { type: String, enum: ['waiting', 'claimed', 'unclaimed', 'removed'], default: 'waiting' },
-    claimedBy: { type: String },
-    claimedAt: { type: Date },
-    createdAt: { type: Date, default: Date.now }
-}));
 
 // Connect to MongoDB and start the server
 mongoose.connect(uri)
@@ -98,6 +75,8 @@ function authenticateToken(req, res, next) {
         next();
     });    
 }
+
+// Remaining API routes and functions remain the same
 
 
 // TextBelt API key
