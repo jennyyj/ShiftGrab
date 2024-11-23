@@ -44,6 +44,14 @@ async function fetchUserInfo() {
     }
 }
 document.addEventListener('DOMContentLoaded', () => {
+    // Websocket 
+    const socket = io.connect('https://shift-grab.vercel.app');
+
+    socket.on('shiftUpdated', (data) => {
+        // Update shift status on the page in real time
+        console.log('Shift updated:', data);
+        fetchPastShifts();  // Re-fetch the shifts to get the latest status
+    });
     // Ensure the form element is loaded before adding an event listener
     const postJobForm = document.getElementById('post-job-form');
     if (postJobForm) {
@@ -741,12 +749,3 @@ function toggleNav() {
         overlay.classList.add('show');
     }
 }
-
-// Websocket 
-const socket = io.connect('https://shift-grab.vercel.app');
-
-socket.on('shiftUpdated', (data) => {
-    // Update shift status on the page in real time
-    console.log('Shift updated:', data);
-    fetchPastShifts();  // Re-fetch the shifts to get the latest status
-});

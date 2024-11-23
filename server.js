@@ -63,7 +63,14 @@ mongoose.connect(uri)
         console.error('Failed to connect to MongoDB Atlas:', err);
         process.exit(1);
     });
-
+        const io = require('socket.io')(server, {
+            cors: {
+                origin: '*', 
+                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+                allowedHeaders: ['Authorization', 'Content-Type'],
+            }
+        });
+    
 // JWT Authentication Middleware
 function authenticateToken(req, res, next) {
     const token = req.headers['authorization']?.split(' ')[1];
@@ -171,7 +178,7 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
             shift,
             category,
             user: user._id,
-            status: { type: String, enum: ['waiting', 'claimed', 'removed', 'unclaimed'], default: 'waiting' }
+            status: 'waiting'
         });
 
         // Step 5: Save the job to the database
@@ -296,12 +303,8 @@ app.get('/api/getPastShifts', authenticateToken, async (req, res) => {
     let query = { user: req.user._id };
 
     // Set query filter based on the request
-    if (filter === 'removed') {
-        query['status'] = 'removed';
-    } else if (filter === 'claimed') {
-        query['status'] = 'claimed';
-    } else if (filter === 'unclaimed') {
-        query['status'] = 'unclaimed';
+    if (filter && ['removed', 'claimed', 'unclaimed'].includes(filter)) {
+        query.status = filter;
     }
 
     try {
@@ -488,14 +491,12 @@ app.get('/api/getUserPreferences', authenticateToken, async (req, res) => {
 });
 
 // Websocket
-const io = require('socket.io')(app.listen(PORT));
-
 io.on('connection', (socket) => {
     console.log('A user connected');
 
-    // Event for claiming a shift
     socket.on('claimShift', (data) => {
-        io.emit('shiftUpdated', data);  // Broadcast updated shift to all clients
+        console.log('Claim Shift Event:', data);
+        io.emit('shiftUpdated', data); // Broadcast to all clients
     });
 
     socket.on('disconnect', () => {
