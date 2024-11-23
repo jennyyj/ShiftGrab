@@ -7,7 +7,6 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
-const io = require('socket.io')(app.listen(PORT));
 
 const app = express();
 
@@ -380,20 +379,6 @@ app.post('/api/claimShift', async (req, res) => {
     }
 });
 
-// Websocket
-io.on('connection', (socket) => {
-    console.log('A user connected');
-
-    // Event for claiming a shift
-    socket.on('claimShift', (data) => {
-        io.emit('shiftUpdated', data);  // Broadcast updated shift to all clients
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
-});
-
 // Settings API's
 app.post('/api/updateUserPreferences', authenticateToken, async (req, res) => {
     const { shiftTimes } = req.body;
@@ -500,4 +485,20 @@ app.get('/api/getUserPreferences', authenticateToken, async (req, res) => {
         console.error('Error fetching user preferences:', error);
         res.status(500).json({ message: 'Error fetching user preferences', error });
     }
+});
+
+// Websocket
+const io = require('socket.io')(app.listen(PORT));
+
+io.on('connection', (socket) => {
+    console.log('A user connected');
+
+    // Event for claiming a shift
+    socket.on('claimShift', (data) => {
+        io.emit('shiftUpdated', data);  // Broadcast updated shift to all clients
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
 });
