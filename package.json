@@ -59,6 +59,7 @@
     "semver": "^7.6.3",
     "set-function-length": "^1.2.2",
     "side-channel": "^1.0.6",
+    "socket.io": "^4.8.1",
     "sparse-bitfield": "^3.0.3",
     "tr46": "^4.1.1",
     "twilio": "^5.3.1",
