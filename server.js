@@ -55,22 +55,38 @@ mongoose.connect(uri)
     .then(() => {
         console.log('Successfully connected to MongoDB Atlas');
         const PORT = process.env.PORT || 3000;
-        app.listen(PORT, () => {
+        const server = app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
         });
+
+        const io = require('socket.io')(server, {
+            cors: {
+                origin: '*',
+                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+                allowedHeaders: ['Authorization', 'Content-Type'],
+            },
+        });
+
+        // Websocket connection
+        io.on('connection', (socket) => {
+            console.log('A user connected');
+
+            socket.on('claimShift', (data) => {
+                console.log('Claim Shift Event:', data);
+                io.emit('shiftUpdated', data); // Broadcast to all clients
+            });
+
+            socket.on('disconnect', () => {
+                console.log('User disconnected');
+            });
+        });
+
     })
     .catch(err => {
         console.error('Failed to connect to MongoDB Atlas:', err);
         process.exit(1);
     });
-        const io = require('socket.io')(server, {
-            cors: {
-                origin: '*', 
-                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-                allowedHeaders: ['Authorization', 'Content-Type'],
-            }
-        });
-    
+
 // JWT Authentication Middleware
 function authenticateToken(req, res, next) {
     const token = req.headers['authorization']?.split(' ')[1];
@@ -82,6 +98,7 @@ function authenticateToken(req, res, next) {
         next();
     });    
 }
+
 
 // TextBelt API key
 const TEXTBELT_API_KEY = process.env.TEXTBELT_API_KEY;
