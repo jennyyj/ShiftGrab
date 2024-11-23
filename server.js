@@ -482,17 +482,3 @@ app.get('/api/getUserPreferences', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Error fetching user preferences', error });
     }
 });
-
-// Websocket
-io.on('connection', (socket) => {
-    console.log('A user connected');
-
-    socket.on('claimShift', (data) => {
-        console.log('Claim Shift Event:', data);
-        io.emit('shiftUpdated', data); // Broadcast to all clients
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
-});
