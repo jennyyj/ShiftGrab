@@ -8,7 +8,7 @@ const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
 
-const { User, Job } = require('./models'); // Import models from models.js
+const { User, Job } = require('./models'); 
 
 const app = express();
 
@@ -75,9 +75,6 @@ function authenticateToken(req, res, next) {
         next();
     });    
 }
-
-// Remaining API routes and functions remain the same
-
 
 // TextBelt API key
 const TEXTBELT_API_KEY = process.env.TEXTBELT_API_KEY;
