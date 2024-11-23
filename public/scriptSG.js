@@ -1,6 +1,7 @@
 const jobDescription = document.getElementById("job-description");
 const postJobForm = document.getElementById("post-job-form");
 const postShiftButton = document.querySelector("button[type='submit']");
+const socket = io.connect('https://shift-grab.vercel.app');
 
 // Add event listeners for form submission
 postJobForm.addEventListener("submit", handleJobPost);
@@ -741,3 +742,10 @@ function toggleNav() {
         overlay.classList.add('show');
     }
 }
+
+// Websocket 
+socket.on('shiftUpdated', (data) => {
+    // Update shift status on the page in real time
+    console.log('Shift updated:', data);
+    fetchPastShifts();  // Re-fetch the shifts to get the latest status
+});

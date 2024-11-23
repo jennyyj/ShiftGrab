@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
+const io = require('socket.io')(app.listen(PORT));
 
 const app = express();
 
@@ -44,9 +45,10 @@ const Job = mongoose.model('Job', new mongoose.Schema({
         endTime: { type: String, required: true }
     },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    status: { type: String, enum: ['pending', 'claimed', 'removed'], default: 'pending' },
+    status: { type: String, enum: ['waiting', 'claimed', 'unclaimed', 'removed'], default: 'waiting' },
     claimedBy: { type: String },
-    claimedAt: { type: Date }
+    claimedAt: { type: Date },
+    createdAt: { type: Date, default: Date.now }
 }));
 
 // Connect to MongoDB and start the server
@@ -170,6 +172,7 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
             shift,
             category,
             user: user._id,
+            status: { type: String, enum: ['waiting', 'claimed', 'removed', 'unclaimed'], default: 'waiting' }
         });
 
         // Step 5: Save the job to the database
@@ -290,17 +293,20 @@ app.get('/api/getRecentShift', authenticateToken, async (req, res) => {
 app.get('/api/getPastShifts', authenticateToken, async (req, res) => {
     const filter = req.query.filter;
 
+    // Initial query for jobs posted by the authenticated user
     let query = { user: req.user._id };
+
+    // Set query filter based on the request
     if (filter === 'removed') {
-    query['status'] = 'removed';
+        query['status'] = 'removed';
     } else if (filter === 'claimed') {
-    query['status'] = 'claimed';
+        query['status'] = 'claimed';
     } else if (filter === 'unclaimed') {
-    query['claimedBy'] = { $exists: false };
+        query['status'] = 'unclaimed';
     }
 
-
     try {
+        // Fetch the filtered shifts
         const shifts = await Job.find(query);
         res.status(200).json(shifts);
     } catch (error) {
@@ -308,6 +314,7 @@ app.get('/api/getPastShifts', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Error fetching past shifts' });
     }
 });
+
 
 app.post('/api/updateShiftStatus', authenticateToken, async (req, res) => {
     const { shiftId, status } = req.body;
@@ -343,6 +350,7 @@ app.post('/api/claimShift', async (req, res) => {
 
         job.claimedBy = workerName;
         job.claimedAt = new Date();
+        job.status = 'claimed'; 
         await job.save();
 
         const message = `The shift at ${job.businessName} has been claimed by ${workerName}.`;
@@ -370,6 +378,20 @@ app.post('/api/claimShift', async (req, res) => {
         console.error('Error:', error);
         res.status(500).json({ message: 'Error claiming shift. Please try again.' });
     }
+});
+
+// Websocket
+io.on('connection', (socket) => {
+    console.log('A user connected');
+
+    // Event for claiming a shift
+    socket.on('claimShift', (data) => {
+        io.emit('shiftUpdated', data);  // Broadcast updated shift to all clients
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
 });
 
 // Settings API's
