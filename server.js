@@ -145,6 +145,10 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
         // Step 1: Find the user by the username from the token
         const user = await User.findById(req.user.id);
 
+        if (!businessName) {
+            return res.status(400).json({ message: 'Business name is required.' });
+        }
+
         if (!user || user.phoneNumbers.length === 0) {
             return res.status(404).json({ message: 'No phone numbers found for this user.' });
         }
