@@ -1,7 +1,7 @@
 {
   "name": "ShiftGrab",
   "short_name": "ShiftGrab",
-  "start_url": "/",
+  "start_url":"https://shift-grab.vercel.app/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
