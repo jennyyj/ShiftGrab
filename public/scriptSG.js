@@ -32,7 +32,7 @@ async function fetchUserInfo() {
 
         const businessNameInput = document.getElementById('business-name');
         if (businessNameInput) {
-            businessNameInput.value = userData.username || "Default Business Name"; // Ensure a default value is set
+            businessNameInput.value = userData.username || "";
         } else {
             console.error('Business name input element not found');
         }
@@ -46,6 +46,8 @@ async function fetchUserInfo() {
 
 // Ensure elements are ready before running functions
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, fetching user info...');
+   fetchUserInfo();
    // Ensure the form element is loaded before adding an event listener
    const postJobForm = document.getElementById('post-job-form');
    if (postJobForm) {
@@ -65,11 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
    } else {
        console.error('Shift dropdown not found');
    }
-
-
-   // Fetch user info once DOM is loaded
-   console.log('DOM loaded, fetching user info...');
-   fetchUserInfo();
 
 
    // Load categories
@@ -134,6 +131,17 @@ async function handleJobPost(e) {
            return;
        }
 
+       // Get other form data
+       const businessNameElement = document.getElementById('business-name');
+       const jobDescriptionElement = document.getElementById('job-description');
+       const businessName = businessNameElement ? businessNameElement.value.trim() : '';
+       const jobDescription = jobDescriptionElement ? jobDescriptionElement.value.trim() : '';
+
+       if (!businessName) {
+            alert("Business name cannot be empty.");
+            postShiftButton.disabled = false;
+            return;
+        }
 
        // Get category
        const categoryElement = document.getElementById("category-select");
@@ -162,14 +170,6 @@ async function handleJobPost(e) {
            }
        }
 
-
-       // Get other form data
-       const businessNameElement = document.getElementById('business-name');
-       const jobDescriptionElement = document.getElementById('job-description');
-       const businessName = businessNameElement ? businessNameElement.value.trim() : '';
-       const jobDescription = jobDescriptionElement ? jobDescriptionElement.value.trim() : '';
-
-
        // Prepare the job data
        const job = {
            businessName,
@@ -195,7 +195,6 @@ async function handleJobPost(e) {
            },
            body: JSON.stringify(job),
        });
-
 
        const result = await response.json();
        if (response.ok) {
