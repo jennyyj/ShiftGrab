@@ -8,17 +8,12 @@ const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
 
-const { User, Job } = require('./models'); 
-
 const app = express();
 
 app.use(express.json());
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors({
-    origin: '*', 
-    methods: 'GET,POST,PUT,DELETE,OPTIONS',
-    allowedHeaders: 'Authorization, Content-Type',
-}));
+app.use(cors());
 app.options('*', cors());
 
 // JWT Secret Key
@@ -27,37 +22,38 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 // MongoDB connection URI
 const uri = process.env.MONGODB_URI;
 
+// Mongoose Models
+const User = mongoose.model('User', new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    phoneNumbers: [{ name: String, number: String, category: String }],
+    jobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }]
+}));
+
+const Job = mongoose.model('Job', new mongoose.Schema({
+    businessName: { type: String, required: true },
+    jobDescription: { type: String },
+    category: { type: String, required: true },
+    shift: {
+        type: { type: String, enum: ['morning', 'midday', 'night', 'custom'], required: true },
+        date: { type: Date },
+        startTime: { type: String, required: true },
+        endTime: { type: String, required: true }
+    },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    status: { type: String, enum: ['pending', 'claimed', 'removed'], default: 'pending' },
+    claimedBy: { type: String },
+    claimedAt: { type: Date }
+}));
+
 // Connect to MongoDB and start the server
 mongoose.connect(uri)
     .then(() => {
         console.log('Successfully connected to MongoDB Atlas');
         const PORT = process.env.PORT || 3000;
-        const server = app.listen(PORT, () => {
+        app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
         });
-
-        const io = require('socket.io')(server, {
-            cors: {
-                origin: '*',
-                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-                allowedHeaders: ['Authorization', 'Content-Type'],
-            },
-        });
-
-        // Websocket connection
-        io.on('connection', (socket) => {
-            console.log('A user connected');
-
-            socket.on('claimShift', (data) => {
-                console.log('Claim Shift Event:', data);
-                io.emit('shiftUpdated', data); // Broadcast to all clients
-            });
-
-            socket.on('disconnect', () => {
-                console.log('User disconnected');
-            });
-        });
-
     })
     .catch(err => {
         console.error('Failed to connect to MongoDB Atlas:', err);
@@ -145,10 +141,6 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
         // Step 1: Find the user by the username from the token
         const user = await User.findById(req.user.id);
 
-        if (!businessName) {
-            return res.status(400).json({ message: 'Business name is required.' });
-        }
-
         if (!user || user.phoneNumbers.length === 0) {
             return res.status(404).json({ message: 'No phone numbers found for this user.' });
         }
@@ -175,7 +167,6 @@ app.post('/api/postJob', authenticateToken, async (req, res) => {
             shift,
             category,
             user: user._id,
-            status: 'waiting'
         });
 
         // Step 5: Save the job to the database
@@ -214,26 +205,16 @@ app.get('/api/getJobs', authenticateToken, async (req, res) => {
 
 app.get('/api/getJob/:id', authenticateToken, async (req, res) => {
     try {
-        // Convert job ID and user ID to ObjectId
-        const jobId = new mongoose.Types.ObjectId(req.params.id);
-        const userId = mongoose.Types.ObjectId(req.user._id); // No need for `new` keyword here
-
-        console.log('Fetching job with ID:', jobId, 'for user ID:', userId); // Log for debugging
-
-        // Update query to ensure IDs are ObjectId
-        const job = await Job.findOne({ _id: jobId, user: userId });
-
+        const job = await Job.findOne({ _id: req.params.id, user: req.user._id });
         if (!job) {
-            console.log('Job not found for user:', userId, 'with job ID:', jobId);
             return res.status(404).json({ message: 'Job not found' });
         }
-
         res.status(200).json(job);
     } catch (error) {
-        console.error('Error fetching job:', error);
         res.status(500).json({ message: 'Error fetching job', error });
     }
 });
+
 
 app.get('/api/getPhoneNumbers', authenticateToken, async (req, res) => {
     const user = await User.findById(req.user.id);
@@ -276,16 +257,11 @@ app.get('/api/getUserInfo', authenticateToken, async (req, res) => {
 // shift status page
 app.get('/api/getRecentShift', authenticateToken, async (req, res) => {
     try {
-        const userId = mongoose.Types.ObjectId(req.user._id); 
-
         // Fetch the most recent job created by the user
-        const recentShift = await Job.findOne({ user: userId }).sort({ 'shift.date': -1 });
-
+        const recentShift = await Job.findOne({ user: req.user._id }).sort({ 'shift.date': -1 });
         if (!recentShift) {
-            console.log('No recent shift found for user:', req.user.username);
             return res.status(404).json({ message: 'No recent shift found' });
         }
-
         res.status(200).json(recentShift);
     } catch (error) {
         console.error('Error fetching recent shift:', error);
@@ -296,40 +272,21 @@ app.get('/api/getRecentShift', authenticateToken, async (req, res) => {
 app.get('/api/getPastShifts', authenticateToken, async (req, res) => {
     const filter = req.query.filter;
 
-    // Initial query for jobs posted by the authenticated user
     let query = { user: req.user._id };
-
-    // Set query filter based on the request
-    if (filter && ['removed', 'claimed', 'unclaimed'].includes(filter)) {
-        query.status = filter;
+    if (filter === 'removed') {
+        query['shift.status'] = 'removed';
+    } else if (filter === 'claimed') {
+        query['shift.status'] = 'claimed';
+    } else if (filter === 'unclaimed') {
+        query['claimedBy'] = { $exists: false };
     }
 
     try {
-        // Fetch the filtered shifts
         const shifts = await Job.find(query);
         res.status(200).json(shifts);
     } catch (error) {
         console.error('Error fetching past shifts:', error);
         res.status(500).json({ message: 'Error fetching past shifts' });
-    }
-});
-
-
-app.post('/api/updateShiftStatus', authenticateToken, async (req, res) => {
-    const { shiftId, status } = req.body;
-
-    try {
-        const job = await Job.findById(shiftId);
-        if (!job) {
-            return res.status(404).json({ message: 'Shift not found' });
-        }
-
-        job.status = status;
-        await job.save();
-        res.status(200).json({ message: 'Shift status updated successfully' });
-    } catch (error) {
-        console.error('Error updating shift status:', error);
-        res.status(500).json({ message: 'Error updating shift status' });
     }
 });
 
@@ -349,7 +306,6 @@ app.post('/api/claimShift', async (req, res) => {
 
         job.claimedBy = workerName;
         job.claimedAt = new Date();
-        job.status = 'claimed'; 
         await job.save();
 
         const message = `The shift at ${job.businessName} has been claimed by ${workerName}.`;
