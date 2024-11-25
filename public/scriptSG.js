@@ -9,6 +9,7 @@ postJobForm.addEventListener("submit", handleJobPost);
 async function fetchUserInfo() {
     const token = localStorage.getItem('token');
     if (!token) {
+        console.error("User is not logged in.");
         window.location.href = 'login.html';
         return;
     }
