@@ -8,13 +8,18 @@ postJobForm.addEventListener("submit", handleJobPost);
 // Get business name 
 async function fetchUserInfo() {
     const token = localStorage.getItem('token');
+    
+    // Change 1: Ensure we have a valid token, otherwise redirect
     if (!token) {
+        console.error("No valid token found, redirecting to login...");
         window.location.href = 'login.html';
         return;
     }
 
     try {
         console.log('Fetching user info...');
+        
+        // Fetch the user info from the API using the token
         const response = await fetch('https://shift-grab.vercel.app/api/getUserInfo', {
             method: 'GET', 
             headers: {
@@ -23,35 +28,51 @@ async function fetchUserInfo() {
             }
         });
 
+        // Change 2: Handle response error properly
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const userData = await response.json();
         console.log('User data received:', userData);
 
+        // Change 3: Properly wait until the element is in the DOM
         const businessNameInput = document.getElementById('business-name');
         if (businessNameInput) {
-            businessNameInput.value = userData.username;
+            businessNameInput.value = userData.username;  // Pre-fill the business name
+            console.log('Business name set to:', userData.username);
         } else {
-            console.error('Business name input element not found');
+            console.error('Business name input element not found after fetching user info.');
         }
-        
+
         return userData;
     } catch (error) {
         console.error('Error fetching user info:', error);
         return null;
     }
 }
-document.addEventListener('DOMContentLoaded', () => {
-    // Websocket 
-    const socket = io.connect('https://shift-grab.vercel.app');
 
+// Main script execution on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', async () => {
+    // Change 4: Ensure the entire DOM is loaded before proceeding
+    console.log('DOM fully loaded. Attempting to fetch user information...');
+
+    // Ensure that the business-name input is available before fetching
+    const businessNameInput = document.getElementById('business-name');
+    if (businessNameInput) {
+        await fetchUserInfo();  // Fetch user info only if the business name element is present
+    } else {
+        console.error('Business name input element not found during DOMContentLoaded.');
+    }
+
+    // Change 5: WebSocket setup
+    const socket = io.connect('https://shift-grab.vercel.app');
     socket.on('shiftUpdated', (data) => {
-        // Update shift status on the page in real time
+        // Update shift status on the page in real-time
         console.log('Shift updated:', data);
         fetchPastShifts();  // Re-fetch the shifts to get the latest status
     });
+
     // Ensure the form element is loaded before adding an event listener
     const postJobForm = document.getElementById('post-job-form');
     if (postJobForm) {
@@ -59,8 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Post Job Form element not found');
     }
- 
- 
+
     // Update selectedShiftOption when a shift is selected
     const shiftDropdown = document.getElementById('shift-selector');
     if (shiftDropdown) {
@@ -71,47 +91,37 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Shift dropdown not found');
     }
- 
- 
-    // Fetch user info once DOM is loaded
-    console.log('DOM loaded, fetching user info...');
-    fetchUserInfo();
- 
- 
-    // Load categories
+
+    // Load categories when the DOM is ready
     loadCategories();
- 
- 
-    // Fetch recent shift for shift status page
+
+    // Fetch recent shift if on shift status page
     if (document.getElementById('recent-shift')) {
         fetchRecentShift();
     }
+
     // Attach event listeners for past shift filter buttons
     const allShiftsBtn = document.querySelector('#all-shifts-btn');
     const removedShiftsBtn = document.querySelector('#removed-shifts-btn');
     const claimedShiftsBtn = document.querySelector('#claimed-shifts-btn');
     const unclaimedShiftsBtn = document.querySelector('#unclaimed-shifts-btn');
- 
- 
+
     if (allShiftsBtn && removedShiftsBtn && claimedShiftsBtn && unclaimedShiftsBtn) {
         allShiftsBtn.addEventListener('click', () => {
             console.log('All shifts button clicked');
             fetchPastShifts('all');
         });
- 
- 
+
         removedShiftsBtn.addEventListener('click', () => {
             console.log('Removed shifts button clicked');
             fetchPastShifts('removed');
         });
- 
- 
+
         claimedShiftsBtn.addEventListener('click', () => {
             console.log('Claimed shifts button clicked');
             fetchPastShifts('claimed');
         });
- 
- 
+
         unclaimedShiftsBtn.addEventListener('click', () => {
             console.log('Not claimed shifts button clicked');
             fetchPastShifts('unclaimed');
@@ -119,19 +129,15 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('One or more shift filter buttons not found.');
     }
-    if (document.getElementById('recent-shift')) {
-        fetchRecentShift();
-    }
- });
- // Handle job posting
- async function handleJobPost(e) {
+});
+
+// Handle job posting
+async function handleJobPost(e) {
     e.preventDefault();
- 
- 
+
     const postShiftButton = document.querySelector("button[type='submit']");
     postShiftButton.disabled = true;
- 
- 
+
     try {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -139,8 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = "login.html";
             return;
         }
- 
- 
+
         // Get category
         const categoryElement = document.getElementById("category-select");
         const category = categoryElement ? categoryElement.value.trim() : '';
@@ -149,16 +154,14 @@ document.addEventListener('DOMContentLoaded', () => {
             postShiftButton.disabled = false;
             return;
         }
- 
- 
+
         // Verify shift data
         if (!window.selectedShiftOption || !window.selectedShiftData) {
             alert("Please select a shift type and time.");
             postShiftButton.disabled = false;
             return;
         }
- 
- 
+
         // Additional validation for custom shifts
         if (window.selectedShiftOption === 'custom') {
             if (!window.selectedShiftData.startTime || !window.selectedShiftData.endTime) {
@@ -167,15 +170,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
         }
- 
- 
+
         // Get other form data
         const businessNameElement = document.getElementById('business-name');
         const jobDescriptionElement = document.getElementById('job-description');
         const businessName = businessNameElement ? businessNameElement.value.trim() : '';
         const jobDescription = jobDescriptionElement ? jobDescriptionElement.value.trim() : '';
- 
- 
+
         // Prepare the job data
         const job = {
             businessName,
@@ -188,11 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 endTime: window.selectedShiftData.endTime
             }
         };
- 
- 
-        console.log('Submitting job:', job); // Debug log
- 
- 
+
+        console.log('Submitting job:', job);
+
+        // Submit the job via API
         const response = await fetch('https://shift-grab.vercel.app/api/postJob', {
             method: 'POST',
             headers: {
@@ -201,8 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify(job),
         });
- 
- 
+
         const result = await response.json();
         if (response.ok) {
             alert("Job posted successfully!");
@@ -219,9 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
         postShiftButton.disabled = false;
     }
- }
- 
- 
+}
  // Fetch recent shift for shift status page
  async function fetchRecentShift() {
     const token = localStorage.getItem('token');
