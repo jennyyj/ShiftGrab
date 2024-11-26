@@ -218,52 +218,51 @@ async function handleJobPost(e) {
 
 // Fetch recent shift for shift status page
 async function fetchRecentShift() {
-   const token = localStorage.getItem('token');
-   const jobId = localStorage.getItem('lastPostedJobId');
+    const token = localStorage.getItem('token');
+    const jobId = localStorage.getItem('lastPostedJobId'); // Ensure this is stored when posting a shift
 
+    if (!token) {
+        console.error("Token not found in local storage");
+        document.getElementById('recent-shift').innerHTML = "You must be logged in to view recent shifts.";
+        return;
+    }
 
-   if (!token) {
-       console.error("Token not found in local storage");
-       document.getElementById('recent-shift').innerHTML = "You must be logged in to view recent shifts.";
-       return;
-   }
+    if (!jobId) {
+        console.error("Job ID not found in local storage");
+        document.getElementById('recent-shift').innerHTML = "No recent shift found.";
+        return;
+    }
 
+    try {
+        const response = await fetch(`https://shift-grab.vercel.app/api/getJob/${jobId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
 
-   if (!jobId) {
-       console.error("Job ID not found in local storage");
-       document.getElementById('recent-shift').innerHTML = "No recent shift found.";
-       return;
-   }
+        if (!response.ok) {
+            throw new Error(`Failed to fetch recent shift: ${response.statusText}`);
+        }
 
-
-   try {
-       const response = await fetch(`https://shift-grab.vercel.app/api/getJob/${jobId}`, {
-           headers: {
-               'Authorization': `Bearer ${token}`,
-               'Content-Type': 'application/json'
-           }
-       });
-
-
-       if (!response.ok) {
-           const errorText = await response.text();
-           throw new Error(`Error: ${response.status} - ${errorText}`);
-       }
-
-
-       const job = await response.json();
-       document.getElementById('recent-shift').innerHTML = `
-           <strong>Shift Posted:</strong><br>
-           Business: ${job.businessName}<br>
-           Description: ${job.jobDescription}<br>
-           Date: ${new Date(job.shift.date).toLocaleString()}<br>
-           Time: ${job.shift.startTime} - ${job.shift.endTime}<br>
-           Claimed By: ${job.claimedBy || 'Not yet claimed'}
-       `;
-   } catch (error) {
-       console.error('Error fetching shift details:', error);
-       document.getElementById('recent-shift').innerHTML = 'Error fetching recent shift details. Please check your connection and try again.';
-   }
+        const job = await response.json();
+        const recentShiftContainer = document.getElementById('recent-shift');
+        recentShiftContainer.innerHTML = `
+            <div class="posted-shift">
+                <h2>POSTED SHIFT</h2>
+                <p><strong>Date:</strong> ${new Date(job.shift.date).toLocaleDateString()}</p>
+                <p><strong>Shift:</strong> ${job.shift.type.toUpperCase()}</p>
+                <p><strong>Job Description:</strong> ${job.jobDescription || 'None'}</p>
+                <button class="remove-shift-btn" onclick="removeShift('${job._id}')">REMOVE SHIFT</button>
+            </div>
+            <div class="shift-status">
+                <h2>STATUS</h2>
+                <p class="${job.status}-status">${job.status.toUpperCase()}</p>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error fetching recent shift:', error);
+    }
 }
 
 
@@ -289,8 +288,7 @@ async function fetchPastShifts(filter) {
 
 
        if (!response.ok) {
-           console.error('Failed to fetch past shifts:', response.status, response.statusText);
-           return;
+           throw new Error('Failed to fetch past shifts:${response.statusText}');
        }
 
 
@@ -300,7 +298,7 @@ async function fetchPastShifts(filter) {
 
        if (response.ok) {
            console.log("Successfully fetched past shifts:", shifts);
-           const pastShiftContainer = document.querySelector('#past-shifts-container');
+           const pastShiftContainer = document.querySelector('past-shifts-container');
            if (pastShiftContainer) {
                // Clear previous content
                pastShiftContainer.innerHTML = '';
@@ -308,10 +306,12 @@ async function fetchPastShifts(filter) {
                // Map through shifts to create HTML elements
                pastShiftContainer.innerHTML = shifts.map(shift => `
                    <div class="past-shift">
-                       <p><strong>Business:</strong> ${shift.businessName}</p>
                        <p><strong>Date/Time:</strong> ${new Date(shift.shift.date).toLocaleString()}</p>
+                       <p><strong>Shift:</strong> ${shift.shift.type.toUpperCase()}</p>
                        <p><strong>Category:</strong> ${shift.category}</p>
+                       <p><strong>Job Description:</strong> ${shift.jobDescription || 'None'}</p>
                        <p><strong>Status:</strong> ${shift.status}</p>
+                       <p class="${shift.status}-status">${shift.status.toUpperCase()}</p>
                    </div>
                `).join('');
            } else {
@@ -323,6 +323,28 @@ async function fetchPastShifts(filter) {
    } catch (error) {
        console.error('Error fetching past shifts:', error);
    }
+}
+
+async function removeShift(shiftId) {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch(`/api/removeShift/${shiftId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            alert('Shift removed successfully.');
+            fetchRecentShift(); // Refresh the recent shift display
+        } else {
+            throw new Error('Failed to remove shift');
+        }
+    } catch (error) {
+        console.error('Error removing shift:', error);
+    }
 }
 
 // Reset form fields

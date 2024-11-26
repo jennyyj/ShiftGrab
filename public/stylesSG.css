@@ -779,3 +779,125 @@ input[type="time"], input[type="text"], input[type="password"] {
     text-align: center;
     color: #52ace4;
 }
+
+/* Shiftstatus page */
+.Shiftbody {
+    font-family: 'Poppins', sans-serif;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.title {
+    font-size: 28px;
+    color: #3a73c1;
+    font-weight: 600;
+    margin: 20px 0;
+}
+
+.shift-updates {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+.posted-shift, .shift-status {
+    width: 45%;
+    text-align: left;
+}
+
+.shift-status {
+    transform: translateX(150px);
+}
+
+.posted-shift h2, .shift-status h2 {
+    font-size: 18px;
+    color: #3a73c1;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.posted-shift p, .shift-status p {
+    font-size: 16px;
+    color: #52ace4;
+    margin: 5px 0;
+}
+
+.remove-shift-btn {
+    display: block;
+    margin: 10px auto 0;
+    padding: 8px 20px;
+    border: 2px solid #3a73c1;
+    background: none;
+    color: #52ace4;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+.remove-shift-btn:hover {
+    background: #f0f8ff;
+    color: #ff6d6d;
+}
+
+.status-section {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0;
+}
+
+.filter-btn {
+    padding: 8px 20px;
+    border: 2px solid #3a73c1;
+    background: none;
+    color: #52ace4;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 50px;
+}
+
+.filter-btn:hover {
+    background: #f0f8ff;
+}
+
+.past-shift-info {
+    text-align: left;
+}
+
+.shift-item {
+    max-width: 900px;
+    margin: 10px auto;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.shift-item p {
+    margin: 5px 0;
+    color: #52ace4;
+}
+
+.waiting-status {
+    color: #52ace4; /* Blue for "Waiting" */
+    font-weight: bold;
+}
+
+.unclaimed-status {
+    color: #ff6d6d !important;
+    font-weight: 600;
+}
+
+.claimed-status {
+    color: green !important;
+    font-weight: 600;
+}
+
+.removed-status {
+    color: #3a73c1 !important;
+    font-weight: 600;
+}

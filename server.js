@@ -290,6 +290,23 @@ app.get('/api/getPastShifts', authenticateToken, async (req, res) => {
     }
 });
 
+app.delete('/api/removeShift/:shiftId', authenticateToken, async (req, res) => {
+    const { shiftId } = req.params;
+
+    try {
+        // Find and delete the shift by ID
+        const shift = await Shift.findByIdAndDelete(shiftId);
+
+        if (!shift) {
+            return res.status(404).json({ message: 'Shift not found' });
+        }
+
+        res.status(200).json({ message: 'Shift successfully removed', shift });
+    } catch (error) {
+        console.error('Error removing shift:', error);
+        res.status(500).json({ message: 'Failed to remove shift', error: error.message });
+    }
+});
 
 // Claim Shift Route
 app.post('/api/claimShift', async (req, res) => {

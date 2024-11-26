@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post Shift</title>
+    <title>Shift Status</title>
     <link rel="stylesheet" href="stylesSG.css">
     <link rel="icon" href="sg.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
-<body>
+<body class="Shiftbody">
     <button class="hamburger-btn" onclick="toggleNav()">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -21,7 +21,6 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
     </button>
-
     <!-- Navigation Drawer -->
     <div class="nav-drawer" id="navDrawer">
         <div style="padding-top: 60px; display: flex; flex-direction: column; height: calc(100% - 60px);">
@@ -73,24 +72,31 @@
         </div>
     </div>
     <div class="overlay" id="overlay" onclick="toggleNav()"></div>
+    <div>
+        <h1 class="title">SHIFT UPDATES</h1>
+        <div id="recent-shift" class="shift-updates">
+            <div class="posted-shift">
+            </div>
+            <div class="shift-status"></div>
+        </div>
+        <hr class="divider">
+        <h1 class="title">PAST SHIFT INFORMATION</h1>
+        <div class="status-section">
+            <button id="all-shifts-btn" class="filter-btn" onclick="fetchAndRenderPastShifts('all')">ALL PAST SHIFTS</button>
+            <button id="claimed-shifts-btn" class="filter-btn" onclick="fetchAndRenderPastShifts('claimed')">CLAIMED SHIFTS</button>
+            <button id="unclaimed-shifts-btn" class="filter-btn" onclick="fetchAndRenderPastShifts('unclaimed')">UNCLAIMED SHIFTS</button>
+            <button id="removed-shifts-btn" class="filter-btn" onclick="fetchAndRenderPastShifts('removed')">REMOVED SHIFTS</button>
+        </div>
+        <div id="past-shifts-container" class="past-shift-info">
+        </div>
+        <div class="past-shift"></div>
+    </div>
+</body>
+</html>
 
-    <div class="container">
-        <!-- Section to display the most recent shift -->
-        <div id="recent-shift">
-            <!-- JavaScript will dynamically add recent shift details here -->
-        </div>
+</body>
+</html>
 
-        <!-- Shift Section -->
-        <div class="shift-header">
-            PAST SHIFT INFORMATION
-        </div>
-        <div id="past-shift-info">
-            <button id="all-shifts-btn">All Past Shifts</button>
-            <button id="removed-shifts-btn">Removed Shifts</button>
-            <button id="claimed-shifts-btn">Claimed Shifts</button>
-            <button id="unclaimed-shifts-btn">Not Claimed Shifts</button>
-            <div id="past-shifts-container"></div> <!-- Add this container to display shifts -->
-        </div>
     </div>
     <script>
         function toggleNav() {
@@ -110,3 +116,4 @@
     <script src="./scriptSG.js" defer></script>
 </body>
 </html>
+
