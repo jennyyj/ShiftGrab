@@ -2,6 +2,10 @@ const jobDescription = document.getElementById("job-description");
 const postJobForm = document.getElementById("post-job-form");
 const postShiftButton = document.querySelector("button[type='submit']");
 
+
+// Add event listeners for form submission
+postJobForm.addEventListener("submit", handleJobPost);
+
 // Get business name 
 async function fetchUserInfo() {
     const token = localStorage.getItem('token');
