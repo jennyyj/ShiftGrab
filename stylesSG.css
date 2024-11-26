@@ -834,10 +834,10 @@ input[type="time"], input[type="text"], input[type="password"] {
     border: 2px solid #3a73c1;
     background: none;
     color: #52ace4;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    border-radius: 20px;
+    border-radius: 50px;
 }
 
 .remove-shift-btn:hover {
@@ -852,11 +852,11 @@ input[type="time"], input[type="text"], input[type="password"] {
 }
 
 .filter-btn {
-    padding: 8px 20px;
+    padding: 4px 15px;
     border: 2px solid #3a73c1;
     background: none;
     color: #52ace4;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     border-radius: 50px;
