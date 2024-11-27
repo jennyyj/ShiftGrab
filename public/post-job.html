@@ -131,8 +131,8 @@
         }
     </script>  
     <script>
-        // Helper function to generate calendar days - define this first
-function generateCalendarDays(selectedDate, onSelect) {
+         // Helper function to generate calendar days - define this first
+ function generateCalendarDays(selectedDate, onSelect) {
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -333,20 +333,8 @@ const ShiftSelector = ({ onShiftSelect }) => {
         )
     );
 };
-
-// Initialize the component when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    const root = ReactDOM.createRoot(document.getElementById('shift-selector-root'));
-    root.render(React.createElement(ShiftSelector, {
-        onShiftSelect: (shift) => {
-            window.selectedShiftOption = shift.type;
-            window.selectedShiftData = shift;
-            console.log('Shift selected:', shift);
-        }
-    }));
-});
-</script>
     </script>
-    <script src="./scriptSG.js" defer></script>
+    <script src="./scripts/postjob.js" defer></script>
+    <script src="./scripts/scriptSG.js" defer></script>
 </body>
 </html>
