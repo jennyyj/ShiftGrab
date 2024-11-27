@@ -1,3 +1,5 @@
+viewPhoneNumbers && (window.viewPhoneNumbers = viewPhoneNumbers);
+
 async function viewPhoneNumbers() {
     console.log("View Phone Numbers button clicked"); // Check if this logs
     const token = localStorage.getItem('token');
