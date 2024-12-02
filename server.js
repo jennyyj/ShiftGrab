@@ -383,12 +383,12 @@ app.post('/api/addCategory', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        user.categories = user.categories || [];
-        if (user.categories.includes(categoryName)) {
+        job.categories = job.categories || [];
+        if (job.categories.includes(categoryName)) {
             return res.status(400).json({ message: 'Category already exists' });
         }
 
-        user.categories.push(categoryName);
+        job.categories.push(categoryName);
         await user.save();
 
         res.status(200).json({ message: 'Category added successfully' });
@@ -405,7 +405,7 @@ app.get('/api/getCategories', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        res.status(200).json(user.categories || []);
+        res.status(200).json(job.categories || []);
     } catch (error) {
         console.error('Error fetching categories:', error);
         res.status(500).json({ message: 'Error fetching categories' });
